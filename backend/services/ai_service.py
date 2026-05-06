@@ -1,6 +1,9 @@
 from google import genai
 from google.genai import types
 
+from pydantic import BaseModel, Field
+from typing import List, Optional
+import json
 import os
 from dotenv import load_dotenv
 load_dotenv()

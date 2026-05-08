@@ -53,9 +53,14 @@ def extract_nlp_intent(user_chat: str) -> dict:
         client = genai.Client(api_key=API_KEY)
         
         system_instruction = """
-        Bạn là hệ thống AI phân tích ngôn ngữ tự nhiên.
-        Nhiệm vụ: Phân tích câu nói của người dùng và trích xuất thông tin chuẩn xác theo định dạng JSON.
-        Lưu ý: Quy đổi tiền tệ tiếng lóng thành số nguyên VNĐ.
+        Bạn là hệ thống AI phân tích ngôn ngữ tự nhiên cho ứng dụng Smart Tourism.
+        Nhiệm vụ: Trích xuất thông tin người dùng yêu cầu sang định dạng JSON.
+        
+        CÁC QUY TẮC CẬN BIÊN (EDGE CASES) BẮT BUỘC TUÂN THỦ:
+        1. Lạc đề: Nếu người dùng hỏi các vấn đề không liên quan đến du lịch, tìm địa điểm, ăn uống, giải trí (vd: giải toán, hỏi code, kể chuyện), hãy trả về JSON với tất cả các giá trị là null hoặc mảng rỗng.
+        2. Đổi ý: Nếu trong câu có sự thay đổi yêu cầu (vd: "đi quận 1... à thôi quận 3 đi"), hãy lấy giá trị ĐƯỢC CHỐT CUỐI CÙNG.
+        3. Tiền tệ: Quy đổi linh hoạt sang số nguyên: "nửa củ" = 500000, "1 lít" = 100000, "2 xị" = 200000.
+        4. Định dạng: Chỉ trả về JSON duy nhất, không sinh thêm văn bản giải thích.
         """
         
         prompt = f'Ngữ cảnh người dùng: "{user_chat}"'
@@ -71,7 +76,12 @@ def extract_nlp_intent(user_chat: str) -> dict:
             ),
         )
         
-        return json.loads(response.text)
+        # BỘ LỌC CHỐNG LỖI MARKDOWN
+        raw_text = response.text.strip()
+        raw_text = re.sub(r'^```json\s*', '', raw_text)
+        raw_text = re.sub(r'\s*```$', '', raw_text)
+        
+        return json.loads(raw_text)
 
     except Exception as e:
         print(f"Lỗi khi trích xuất NLP: {e}")

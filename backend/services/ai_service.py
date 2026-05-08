@@ -53,17 +53,20 @@ def extract_nlp_intent(user_chat: str) -> dict:
         client = genai.Client(api_key=API_KEY)
         
         system_instruction = """
-        Bạn là hệ thống AI phân tích ngôn ngữ tự nhiên cho ứng dụng Smart Tourism.
-        Nhiệm vụ: Trích xuất thông tin người dùng yêu cầu sang định dạng JSON.
+        Bạn là hệ thống AI phân tích ngôn ngữ tự nhiên cấp cao cho ứng dụng Smart Tourism.
+        Nhiệm vụ: Trích xuất thông tin sang JSON THEO ĐÚNG CẤU TRÚC 6 TRƯỜNG ĐÃ QUY ĐỊNH.
         
-        CÁC QUY TẮC CẬN BIÊN (EDGE CASES) BẮT BUỘC TUÂN THỦ:
-        1. Lạc đề: Nếu người dùng hỏi các vấn đề không liên quan đến du lịch, tìm địa điểm, ăn uống, giải trí (vd: giải toán, hỏi code, kể chuyện), hãy trả về JSON với tất cả các giá trị là null hoặc mảng rỗng.
-        2. Đổi ý: Nếu trong câu có sự thay đổi yêu cầu (vd: "đi quận 1... à thôi quận 3 đi"), hãy lấy giá trị ĐƯỢC CHỐT CUỐI CÙNG.
-        3. Tiền tệ: Quy đổi linh hoạt sang số nguyên: "nửa củ" = 500000, "1 lít" = 100000, "2 xị" = 200000.
-        4. Định dạng: Chỉ trả về JSON duy nhất, không sinh thêm văn bản giải thích.
+        XỬ LÝ THÔNG MINH (KHÔNG ĐƯỢC ĐỔI CẤU TRÚC JSON):
+        1. Lạc đề: Trả về JSON rỗng (null toàn bộ, tags rỗng) nếu câu KHÔNG liên quan du lịch, tìm địa điểm, ăn uống, vui chơi.
+        2. Đổi ý: Lấy giá trị ĐƯỢC CHỐT CUỐI CÙNG.
+        3. Tiền lóng: Tự quy đổi ("nửa củ"=500000, "1 lít"=100000, "vài chục"=50000).
+        4. Teencode & Không dấu: Tự động hiểu tiếng Việt viết tắt (q1, cf, ko ồn).
+        5. Lọc từ khóa thông minh: 
+           - Gom TẤT CẢ nhu cầu (đi với ai, loại hình ăn uống) vào mảng `tags` (vd: "đi cặp đôi", "hải sản").
+           - Nếu khách nói KHÔNG THÍCH gì đó (vd: "không ồn", "tránh đông đúc"), tự động chuyển đổi thành từ khóa tích cực tương đương (vd: đưa chữ "yên tĩnh" vào `tags`).
         """
         
-        prompt = f'Ngữ cảnh người dùng: "{user_chat}"'
+        prompt = f'Câu chat người dùng: "{user_chat}"'
         
         response = client.models.generate_content(
             model='gemini-2.5-flash',
@@ -76,15 +79,18 @@ def extract_nlp_intent(user_chat: str) -> dict:
             ),
         )
         
-        # BỘ LỌC CHỐNG LỖI MARKDOWN
+        # Dọn rác Markdown
         raw_text = response.text.strip()
         raw_text = re.sub(r'^```json\s*', '', raw_text)
         raw_text = re.sub(r'\s*```$', '', raw_text)
         
-        return json.loads(raw_text)
+        # SỬ DỤNG PYDANTIC ĐỂ CHỐT KIỂM DUYỆT (An toàn tuyệt đối)
+        validated_data = NLPResponse.model_validate_json(raw_text)
+        return validated_data.model_dump()
 
     except Exception as e:
         print(f"Lỗi khi trích xuất NLP: {e}")
+        # Báo lỗi nhưng vẫn nhả ra khuôn mẫu chuẩn của team
         return {
             "location": None, "max_price": None, "tags": [], 
             "timeopen": None, "min_rating": None, "current_time": None

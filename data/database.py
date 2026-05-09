@@ -6,7 +6,7 @@ from pathlib import Path
 # CONFIG
 # ======================================================
 EXCEL_FILE = "raw/location.xlsx"
-DATABASE_FILE = "hcmc_entertainment.db"
+DATABASE_FILE = "places.db"
 TABLE_NAME = "places"
 
 # ======================================================

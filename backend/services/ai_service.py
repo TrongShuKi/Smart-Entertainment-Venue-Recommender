@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 import json
 import os
+import re
 from dotenv import load_dotenv
 load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")

@@ -5,16 +5,49 @@ import json
 
 from pydantic import BaseModel
 from datetime import datetime
+from typing import List, Optional
 
-from config import settings
+from backend.core.config import settings
 
 logger = logging.getLogger(__name__)
+
+# ============================================================================
+ 
+# Map từ khoá thời tiết người dùng hay dùng → weather condition chuẩn của OWM
+WEATHER_TAG_MAP: dict[str, str] = {
+    "mưa":        "RAIN",   "trời mưa":   "RAIN",  "mưa lớn":  "RAIN",
+    "mưa nhỏ":   "RAIN",   "mưa phùn":   "RAIN",
+    "bão":        "STORM",  "dông bão":   "STORM", "dông":     "STORM",
+    "nắng":       "CLEAR",  "trời nắng":  "CLEAR", "nắng đẹp": "CLEAR",
+    "nắng gắt":   "CLEAR",
+    "mây":        "CLOUDS", "u ám":       "CLOUDS","nhiều mây":"CLOUDS",
+}
+ 
+# Map condition code → tên tiếng Việt (dùng khi build response / context string)
+WEATHER_CONDITION_VI: dict[str, str] = {
+    "RAIN":    "trời mưa",
+    "STORM":   "có bão",
+    "DRIZZLE": "mưa nhỏ",
+    "CLEAR":   "nắng đẹp",
+    "CLOUDS":  "nhiều mây",
+    "MIST":    "sương mù",
+    "SNOW":    "lạnh",
+}
 
 class WeatherResponse(BaseModel):
     weatherCondition: str
     temperature: float
     rainProbability: float
 
+# HELPER — Phát hiện thời tiết từ NLP tags (không tốn API call)
+# ============================================================================
+ 
+def parse_weather_from_tags(tags: List[str]) -> Optional[str]:
+    for tag in tags:
+        condition = WEATHER_TAG_MAP.get(tag.lower().strip())
+        if condition:
+            return condition
+    return None
 
 redis_pool = redis.ConnectionPool.from_url(settings.REDIS_URL, decode_responses=True)
 redis_client = redis.Redis(connection_pool=redis_pool)

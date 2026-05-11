@@ -28,7 +28,7 @@ class Settings(BaseSettings):
 
     # Rate Limiting — Giới hạn request từ phía người dùng
     RATE_LIMIT_PER_MINUTE: int = 5      # tối đa 5 lần search / phút / IP
-    RATE_LIMIT_PER_DAY: int = 20        # tối đa 20 lần search / ngày / IP
+    RATE_LIMIT_PER_DAY: int = 100       # tối đa 20 lần search / ngày / IP
 
     # App
     APP_ENV: str = "development"

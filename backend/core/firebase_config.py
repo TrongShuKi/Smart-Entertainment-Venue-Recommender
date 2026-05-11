@@ -99,8 +99,4 @@ def get_firestore() -> firestore.Client:
     init_firebase_admin()
     return firestore.client()
 
-
-# ---------------------------------------------------------------------------
-# Singleton Firestore client — import và dùng trực tiếp
-# ---------------------------------------------------------------------------
 db = get_firestore()

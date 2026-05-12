@@ -6,11 +6,13 @@ Hai hàm chính:
   - generate_text(name, category, ctx)  → dict {"description": str, "fact": str}
 """
 
+import json
 import os
 import re
 import logging
+from pathlib import Path
 from typing import List, Optional
-
+ 
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
@@ -21,16 +23,45 @@ logger = logging.getLogger(__name__)
 
 API_KEY = os.getenv("GEMINI_API_KEY")
 
-# ── Fallback an toàn — LUÔN là dict ──────────────────────────────────────────
+# ==== Fallback
 _FALLBACK_GENERATE = {"description": "", "fact": ""}
 _FALLBACK_NLP = {
     "location": None, "max_price": None, "tags": [],
     "timeopen": None, "min_rating": None, "current_time": None,
 }
 
+# ══════════════════════════════════════════════════════════════════════════════
+# CACHE generate_text
+# ══════════════════════════════════════════════════════════════════════════════
+_AI_CACHE_FILE = (
+    Path(__file__).resolve()
+    .parent 
+    .parent 
+    .parent 
+    / "data"
+    / "ai_content_cache.json"
+)
+ 
+def _load_ai_cache() -> dict:
+    try:
+        if _AI_CACHE_FILE.exists():
+            return json.loads(_AI_CACHE_FILE.read_text(encoding="utf-8"))
+    except Exception as e:
+        logger.warning(f"[AI Cache] Lỗi đọc: {e}")
+    return {}
+ 
+def _save_ai_cache(cache: dict) -> None:
+    try:
+        _AI_CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _AI_CACHE_FILE.write_text(
+            json.dumps(cache, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+    except Exception as e:
+        logger.warning(f"[AI Cache] Lỗi ghi: {e}")
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SCHEMA cho generate_text — ép Gemini trả JSON 2 trường
+# SCHEMA cho generate_text và extract_nlp_intent
 # ══════════════════════════════════════════════════════════════════════════════
 class GeneratedPlaceContent(BaseModel):
     description: str = Field(
@@ -47,10 +78,6 @@ class GeneratedPlaceContent(BaseModel):
         )
     )
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# SCHEMA cho extract_nlp_intent
-# ══════════════════════════════════════════════════════════════════════════════
 class NLPResponse(BaseModel):
     location:     Optional[str]   = Field(default=None, description="Tên quận/huyện/địa điểm. Nếu không có để null.")
     max_price:    Optional[int]   = Field(default=None, description="Mức giá tối đa quy ra VNĐ. Nếu không có để null.")
@@ -59,18 +86,25 @@ class NLPResponse(BaseModel):
     min_rating:   Optional[float] = Field(default=None, description="Số sao tối thiểu. Nếu không có để null.")
     current_time: Optional[str]   = Field(default=None, description="Thời gian đi chơi, 'now' nếu đi ngay.")
 
-
 # ══════════════════════════════════════════════════════════════════════════════
-# generate_text — LUÔN trả về dict {"description": str, "fact": str}
+# generate_text
 # ══════════════════════════════════════════════════════════════════════════════
 def generate_text(location_name: str, category: str, user_context: str) -> dict:
     """
     Sinh mô tả + fact cho 1 địa điểm.
-
     Returns:
         {"description": str, "fact": str}
         Trả về dict rỗng-string nếu API lỗi — KHÔNG BAO GIỜ raise hoặc trả string thô.
     """
+    # 1. Cache hit?
+    cache = _load_ai_cache()
+    if location_name in cache:
+        logger.info(f"[AI Cache] HIT: '{location_name}'")
+        return cache[location_name]
+ 
+    logger.info(f"[AI Cache] MISS -> goi Gemini: '{location_name}'")
+
+    # 2. Goi Gemini
     try:
         client = genai.Client(api_key=API_KEY)
 
@@ -93,17 +127,22 @@ def generate_text(location_name: str, category: str, user_context: str) -> dict:
             ),
         )
 
-        # Dọn Markdown fence nếu có
         raw = response.text.strip()
         raw = re.sub(r"^```json\s*", "", raw)
         raw = re.sub(r"\s*```$", "", raw)
 
         validated = GeneratedPlaceContent.model_validate_json(raw)
-        return validated.model_dump()   # {"description": "...", "fact": "..."}
+        result = validated.model_dump()
+
+        # 3. Luu cache
+        cache[location_name] = result
+        _save_ai_cache(cache)
+        logger.info(f"[AI Cache] Da luu: '{location_name}' -> {_AI_CACHE_FILE}")
+ 
+        return result
 
     except Exception as e:
         logger.warning(f"[AI Generate] Lỗi cho '{location_name}': {e}")
-        # Fallback có nội dung tối thiểu thay vì rỗng hoàn toàn
         return {
             "description": f"Một địa điểm {category} đáng trải nghiệm tại TP.HCM.",
             "fact": "Hãy đến tận nơi để cảm nhận không khí thực sự của địa điểm này.",
@@ -111,9 +150,22 @@ def generate_text(location_name: str, category: str, user_context: str) -> dict:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# extract_nlp_intent — trả về dict 6 trường chuẩn
+# extract_nlp_intent
 # ══════════════════════════════════════════════════════════════════════════════
 def extract_nlp_intent(user_chat: str) -> dict:
+    """
+    Trích xuất ngữ cảnh từ câu chat tự nhiên của người dùng.
+    Args:
+        user_chat: Câu chat thô (tiếng Việt, teencode, không dấu đều được)
+    Returns: dict 6 trường
+        location     : str | None
+        max_price    : int | None
+        tags         : list[str]
+        timeopen     : bool | None
+        min_rating   : float | None
+        current_time : str | None
+    Fallback: trả dict rỗng chuẩn nếu Gemini lỗi, không bao giờ raise.
+    """
     try:
         client = genai.Client(api_key=API_KEY)
 

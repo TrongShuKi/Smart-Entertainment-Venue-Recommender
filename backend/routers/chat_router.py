@@ -29,6 +29,9 @@ from backend.services.weather_service import (
 from data.database import get_all_places
 
 logger = logging.getLogger(__name__)
+
+logging.basicConfig(level=logging.INFO)
+
 router = APIRouter(prefix="/suggest", tags=["Suggest"])
 
 _engine = RecommenderEngine()

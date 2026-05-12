@@ -94,7 +94,7 @@ async def get_suggestions(
     user_label = user.get("email") if user else "Guest"
     logger.info(f"[Suggest] User={user_label} | Query='{payload.query}'")
 
-    # ── 1. NLP ────────────────────────────────────────────────────────────────
+    # ── 1. NLP
     nlp: Dict = await asyncio.to_thread(extract_nlp_intent, payload.query)
     logger.info(f"[NLP] {nlp}")
 
@@ -104,7 +104,7 @@ async def get_suggestions(
     current_time_str: Optional[str]   = nlp.get("current_time")
     nlp_location:     Optional[str]   = nlp.get("location")
 
-    # ── 2. Weather ───────────────────────────────────────────────────────────
+    # ── 2. Weather
     weather_condition = "CLEAR"
     temperature       = 28.0
     rain_probability  = 0.0
@@ -129,12 +129,12 @@ async def get_suggestions(
         except Exception as exc:
             logger.warning(f"[Weather] Lỗi API, dùng fallback: {exc}")
 
-    # ── 3. Load DB ────────────────────────────────────────────────────────────
+    # ── 3. Load DB 
     all_places: List[Dict] = await asyncio.to_thread(get_all_places)
     if not all_places:
         raise HTTPException(status_code=503, detail="Không thể tải dữ liệu địa điểm.")
 
-    # ── 4. Build scoring input ────────────────────────────────────────────────
+    # ── 4. Build scoring input 
     user_coords: Tuple[float, float] = (
         (payload.location[0], payload.location[1])
         if payload.location and len(payload.location) == 2
@@ -154,7 +154,7 @@ async def get_suggestions(
         "coords":       user_coords,
     }
 
-    # ── 5. Scoring ────────────────────────────────────────────────────────────
+    # ── 5. Scoring 
     top_scored: List[Dict] = await asyncio.to_thread(
         _engine.generate_recommendations, user_request, user_context, all_places
     )
@@ -174,7 +174,7 @@ async def get_suggestions(
             for p in sorted_places[:3]
         ]
 
-    # ── 6. AI Generate (song song) ────────────────────────────────────────────
+    # ── 6. AI Generate (song song)
     place_map = {p["id"]: p for p in all_places}
     context_str = _build_context_string(nlp, weather_condition, temperature)
 
@@ -188,7 +188,7 @@ async def get_suggestions(
 
     generated: List[Dict] = await asyncio.gather(*[_gen(r) for r in top_scored])
 
-    # ── 7. Assemble response ──────────────────────────────────────────────────
+    # ── 7. Assemble response
     top_places: List[Place] = []
     for scored_ref, gen in zip(top_scored, generated):
         place = place_map.get(scored_ref["location_id"])
@@ -214,7 +214,7 @@ async def get_suggestions(
             fact        = gen.get("fact", ""),
         ))
 
-    # ── 8. Lưu lịch sử ───────────────────────────────────────────────────────
+    # ── 8. Lưu lịch sử 
     if user and top_scored:
         asyncio.create_task(
             asyncio.to_thread(save_history, user["uid"], payload.query, top_scored)

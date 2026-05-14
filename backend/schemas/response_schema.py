@@ -35,6 +35,7 @@ class WeatherInfo(BaseModel):
     temperature:      float = 0.0       # Nhiệt độ (°C)
     rain_probability: float = 0.0       # Xác suất có mưa (0.0 – 1.0)
     source:           str   = "api"     # "api" = lấy từ API | "user" = user tự cung cấp
+    location_name:    str   = ""
 
 
 class SuggestionResponse(BaseModel):

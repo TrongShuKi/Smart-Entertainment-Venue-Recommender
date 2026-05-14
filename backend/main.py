@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from backend.routers.auth_router import router as auth_router
 from backend.routers.chat_router import router as suggest_router
+from backend.routers.weather_router import router as weather_router
 
 app = FastAPI(title="Smart Suggestion API", version="1.0.0")
 
@@ -16,6 +18,7 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(suggest_router)
+app.include_router(weather_router, prefix="/weather", tags=["weather"])
 
 @app.get("/")
 def read_root():

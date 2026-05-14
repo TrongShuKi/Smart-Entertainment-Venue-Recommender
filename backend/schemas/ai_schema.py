@@ -34,7 +34,8 @@ class NLPResponse(BaseModel):
     tags: List[str] = Field(
         default_factory=list,
         description=(
-            "Mảng các từ khóa mô tả nhu cầu: loại hình địa điểm, không khí, đi với ai, món ăn... "
+            "Mảng các từ khóa mô tả nhu cầu: loại hình địa điểm, không khí, đi với ai, món ăn..., "
+            "Và Nếu người dùng có nhắc đến thời tiết (vd: trời mưa, mưa, nắng, bão...)"
             "Gom TẤT CẢ vào đây. "
             "Nếu khách nói KHÔNG thích gì đó, chuyển sang từ khóa TÍCH CỰC tương đương "
             "(vd: 'không ồn' → 'yên tĩnh', 'tránh đám đông' → 'vắng vẻ'). "

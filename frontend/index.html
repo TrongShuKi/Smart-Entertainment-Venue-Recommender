@@ -1,0 +1,3893 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Tourism</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Swiper (Phần 2) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+  <!-- Leaflet (Phần 4) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Chart.js (Phần 4 - weather chart) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* ═══════════════════════════════════════════════
+       DESIGN TOKENS & RESET
+    ═══════════════════════════════════════════════ */
+    :root {
+      --bg-deep:      #0a0c0f;
+      --bg-card:      #111418;
+      --bg-glass:     rgba(10, 12, 15, 0.55);
+      --border-glass: rgba(255, 255, 255, 0.08);
+      --accent:       #c8a96e;        /* warm gold */
+      --accent-dim:   rgba(200, 169, 110, 0.18);
+      --text-primary: #f0ede8;
+      --text-muted:   rgba(240, 237, 232, 0.45);
+      --text-dim:     rgba(240, 237, 232, 0.22);
+      --white:        #ffffff;
+      --danger:       #e05252;
+      --success:      #52b788;
+
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-ui:      'DM Sans', sans-serif;
+      --font-mono:    'Space Grotesk', monospace;
+
+      --nav-h:        64px;
+      --radius-card:  20px;
+      --radius-pill:  999px;
+      --shadow-card:  0 8px 40px rgba(0,0,0,0.55);
+      --shadow-glow:  0 0 30px rgba(200, 169, 110, 0.25);
+
+      --transition:   0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      --transition-fast: 0.18s ease;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: var(--font-ui);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; border: none; background: none; font-family: inherit; color: inherit; }
+    input, textarea { font-family: inherit; }
+
+    /* ─── Scrollbar ─── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg-deep); }
+    ::-webkit-scrollbar-thumb { background: var(--accent-dim); border-radius: 99px; }
+
+    /* ─── Utility ─── */
+    .hidden  { display: none !important; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+
+    /* ═══════════════════════════════════════════════
+       SECTION VISIBILITY (Hide & Reveal strategy)
+    ═══════════════════════════════════════════════ */
+    #section-discovery,
+    #section-decision { display: none; }
+
+    #section-discovery.revealed,
+    #section-decision.revealed { display: block; }
+
+    /* ═══════════════════════════════════════════════
+       NAVBAR
+    ═══════════════════════════════════════════════ */
+    #navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      z-index: 900;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      background: var(--bg-glass);
+      backdrop-filter: blur(20px) saturate(1.4);
+      -webkit-backdrop-filter: blur(20px) saturate(1.4);
+      border-bottom: 1px solid var(--border-glass);
+      transition: background var(--transition);
+    }
+
+    /* Brand */
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .nav-brand-icon {
+      width: 32px; height: 32px;
+      border: 1.5px solid var(--accent);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      color: var(--accent);
+      transition: box-shadow var(--transition-fast);
+    }
+    .nav-brand:hover .nav-brand-icon { box-shadow: var(--shadow-glow); }
+    .nav-brand-text {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-primary);
+    }
+
+    /* Nav links (center) */
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      position: relative;
+      padding-bottom: 2px;
+      transition: color var(--transition-fast);
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 0;
+      width: 0; height: 1px;
+      background: var(--accent);
+      transition: width var(--transition);
+    }
+    .nav-links a:hover,
+    .nav-links a.active { color: var(--white); }
+    .nav-links a:hover::after,
+    .nav-links a.active::after { width: 100%; }
+
+    /* Nav actions (right) */
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-btn {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border-glass);
+      color: var(--text-muted);
+      font-size: 16px;
+      transition: all var(--transition-fast);
+      position: relative;
+    }
+    .nav-btn:hover {
+      background: rgba(255,255,255,0.09);
+      color: var(--white);
+      border-color: rgba(255,255,255,0.15);
+    }
+    .nav-btn.nav-search { font-size: 18px; }
+
+    /* Badge on heart button */
+    .nav-btn .badge {
+      position: absolute;
+      top: -3px; right: -3px;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--bg-deep);
+      font-size: 9px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0;
+      transform: scale(0);
+      transition: all var(--transition-fast);
+    }
+    .nav-btn .badge.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* User dropdown */
+    .nav-user-wrap { position: relative; }
+    .user-dropdown {
+      position: absolute;
+      top: calc(100% + 12px);
+      right: 0;
+      width: 200px;
+      background: #1a1d22;
+      border: 1px solid var(--border-glass);
+      border-radius: 14px;
+      padding: 8px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-8px);
+      transition: all var(--transition);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    }
+    .user-dropdown.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      transition: all var(--transition-fast);
+      cursor: pointer;
+    }
+    .dropdown-item:hover { background: rgba(255,255,255,0.05); color: var(--white); }
+    .dropdown-item.danger:hover { background: rgba(224,82,82,0.1); color: var(--danger); }
+    .dropdown-sep {
+      height: 1px;
+      background: var(--border-glass);
+      margin: 4px 0;
+    }
+    .dropdown-user-info {
+      padding: 10px 12px 6px;
+      border-bottom: 1px solid var(--border-glass);
+      margin-bottom: 4px;
+    }
+    .dropdown-user-email {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dropdown-user-name {
+      font-size: 13px;
+      color: var(--text-primary);
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    /* Guest tag in navbar */
+    .guest-tag {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      padding: 3px 10px;
+      border: 1px solid var(--border-glass);
+      border-radius: 99px;
+      color: var(--text-dim);
+    }
+
+    /* Login button — standalone, không dùng .nav-btn */
+    .nav-login-btn {
+      display: flex;
+      align-items: center;
+      height: 36px;
+      padding: 0 18px;
+      border-radius: 10px;
+      border: 1px solid rgba(200, 169, 110, 0.4);
+      background: rgba(200, 169, 110, 0.08);
+      color: var(--accent);
+      font-size: 12px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      white-space: nowrap;
+    }
+    .nav-login-btn:hover {
+      background: rgba(200, 169, 110, 0.16);
+      border-color: rgba(200, 169, 110, 0.7);
+      color: #d4b87e;
+    }
+
+    /* ═══════════════════════════════════════════════
+       SECTION 1 — HERO
+    ═══════════════════════════════════════════════ */
+    #section-hero {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      min-height: 600px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Background image */
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=1920&q=80');
+      background-size: cover;
+      background-position: center;
+      filter: blur(0px) brightness(0.65);
+      transform: scale(1.04);
+      transition: filter 1.2s ease, transform 1.2s ease;
+    }
+    /* Gradient overlays */
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to bottom,
+          rgba(10,12,15,0.45) 0%,
+          rgba(10,12,15,0.15) 40%,
+          rgba(10,12,15,0.55) 100%);
+    }
+
+    /* Content */
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--accent);
+      opacity: 0;
+      transform: translateY(12px);
+      animation: fadeUp 0.8s 0.2s forwards;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(52px, 8vw, 110px);
+      font-weight: 700;
+      line-height: 0.92;
+      letter-spacing: -0.01em;
+      color: var(--white);
+      opacity: 0;
+      transform: translateY(18px);
+      animation: fadeUp 0.9s 0.35s forwards;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      font-size: 15px;
+      font-weight: 300;
+      color: rgba(240, 237, 232, 0.65);
+      letter-spacing: 0.04em;
+      max-width: 480px;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: fadeUp 0.85s 0.5s forwards;
+    }
+
+    /* ─── Search Bar ─── */
+    .hero-search-wrap {
+      width: 100%;
+      max-width: 660px;
+      margin-top: 12px;
+      opacity: 0;
+      transform: translateY(14px);
+      animation: fadeUp 0.85s 0.65s forwards;
+    }
+
+    .hero-search-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(24px) saturate(1.5);
+      -webkit-backdrop-filter: blur(24px) saturate(1.5);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: var(--radius-pill);
+      padding: 6px 6px 6px 24px;
+      transition: all var(--transition);
+      box-shadow: 0 4px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+    .hero-search-box:focus-within {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(200, 169, 110, 0.5);
+      box-shadow: 0 4px 40px rgba(0,0,0,0.3), var(--shadow-glow), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+
+    .hero-search-input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      font-family: var(--font-ui);
+      font-size: 15px;
+      font-weight: 300;
+      color: var(--white);
+      padding: 10px 12px 10px 0;
+    }
+    .hero-search-input::placeholder { color: rgba(255,255,255,0.38); }
+
+    .hero-search-btn {
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--bg-deep);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      transition: all var(--transition-fast);
+      box-shadow: 0 4px 16px rgba(200,169,110,0.35);
+    }
+    .hero-search-btn:hover {
+      background: #d4b87e;
+      transform: scale(1.05);
+      box-shadow: 0 6px 22px rgba(200,169,110,0.5);
+    }
+    .hero-search-btn:active { transform: scale(0.97); }
+    .hero-search-btn.loading {
+      pointer-events: none;
+    }
+    .hero-search-btn.loading::after {
+      content: '';
+      width: 20px; height: 20px;
+      border: 2px solid rgba(10,12,15,0.3);
+      border-top-color: var(--bg-deep);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    .hero-search-btn.loading svg { display: none; }
+
+    /* Suggestion chips */
+    .hero-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 4px;
+      opacity: 0;
+      animation: fadeUp 0.85s 0.85s forwards;
+    }
+    .hero-chip {
+      font-size: 12px;
+      font-family: var(--font-mono);
+      padding: 6px 14px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: var(--radius-pill);
+      color: rgba(255,255,255,0.55);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      background: rgba(255,255,255,0.04);
+    }
+    .hero-chip:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    /* Scroll cue */
+    .hero-scroll-cue {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      opacity: 0;
+      animation: fadeUp 1s 1.2s forwards;
+      z-index: 2;
+    }
+    .scroll-line {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, transparent, var(--accent));
+      animation: scrollPulse 1.8s ease-in-out infinite;
+    }
+    .scroll-label {
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+
+    /* ─── Weather mini badge on hero ─── */
+    .hero-weather-badge {
+      position: absolute;
+      bottom: 40px;
+      right: 40px;
+      background: var(--bg-glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-glass);
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all var(--transition);
+      z-index: 2;
+    }
+    .hero-weather-badge.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .weather-badge-icon { font-size: 24px; line-height: 1; }
+    .weather-badge-info { display: flex; flex-direction: column; }
+    .weather-badge-temp {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1;
+      color: var(--white);
+    }
+    .weather-badge-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* ─── Error toast ─── */
+    #toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1e1e24;
+      border: 1px solid rgba(224,82,82,0.3);
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-size: 13px;
+      color: var(--danger);
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: all var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 420px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+    #toast.success { border-color: rgba(82,183,136,0.3); color: var(--success); }
+
+    /* ═══════════════════════════════════════════════
+       SECTION 2 — DISCOVERY (placeholder skeleton)
+    ═══════════════════════════════════════════════ */
+    #section-discovery {
+      min-height: 100vh;
+      position: relative;
+    }
+    /* Nội dung thực sẽ được render bởi JS (Phần 2) */
+    .discovery-placeholder {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      letter-spacing: 0.1em;
+    }
+    .discovery-placeholder-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.4;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    /* ═══════════════════════════════════════════════
+       SECTION 2 — DISCOVERY (Part 2 full implementation)
+    ═══════════════════════════════════════════════ */
+
+    /* Background layers — two divs for crossfade effect */
+    .disc-bg {
+      position: absolute;
+      inset: -30px;
+      background-size: cover;
+      background-position: center;
+      filter: blur(22px) brightness(0.38) saturate(0.75);
+      transform: scale(1.06);
+      transition: opacity 0.7s ease;
+      will-change: opacity;
+    }
+    .disc-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        105deg,
+        rgba(10,12,15,0.96) 0%,
+        rgba(10,12,15,0.82) 32%,
+        rgba(10,12,15,0.3) 62%,
+        rgba(10,12,15,0.05) 100%
+      );
+      z-index: 1;
+    }
+
+    /* Context bar — AI summary of query */
+    .disc-context-bar {
+      position: absolute;
+      top: calc(var(--nav-h) + 22px);
+      left: clamp(24px, 5vw, 80px);
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+    }
+    .disc-context-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.7;
+      flex-shrink: 0;
+    }
+    .disc-context-bar strong { color: var(--accent); font-weight: 500; }
+
+    /* Main layout */
+    .disc-layout {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      min-height: 100vh;
+      padding: calc(var(--nav-h) + 60px) 0 80px;
+    }
+
+    /* ── Left panel ── */
+    .disc-left {
+      flex: 0 0 38%;
+      padding: 0 clamp(16px, 3vw, 48px) 0 clamp(24px, 5vw, 80px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Staggered animation helpers */
+    .disc-anim {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+    .disc-anim.in { opacity: 1; transform: translateY(0); }
+
+    .disc-distance-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .disc-region-text {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .disc-place-title {
+      font-family: var(--font-display);
+      font-size: clamp(40px, 5.5vw, 84px);
+      font-weight: 700;
+      line-height: 0.88;
+      letter-spacing: -0.01em;
+      color: var(--white);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .disc-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .disc-stars { color: var(--accent); letter-spacing: 2px; font-size: 14px; }
+    .disc-rating-num {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .disc-price-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 11px;
+      border-radius: 20px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(200,169,110,0.25);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .disc-place-desc {
+      font-size: 13.5px;
+      font-weight: 300;
+      color: rgba(240, 237, 232, 0.58);
+      line-height: 1.7;
+      max-width: 360px;
+      margin-bottom: 30px;
+    }
+    .disc-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .disc-bookmark-btn {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.05);
+      color: var(--text-muted);
+      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition-fast);
+      flex-shrink: 0;
+    }
+    .disc-bookmark-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+    .disc-bookmark-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(200,169,110,0.15);
+    }
+    .disc-bookmark-btn.active svg { fill: var(--accent); }
+
+    .disc-select-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      padding: 13px 26px;
+      border-radius: var(--radius-pill);
+      border: 1.5px solid rgba(255,255,255,0.7);
+      background: transparent;
+      color: var(--white);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: all var(--transition-fast);
+    }
+    .disc-select-btn:hover {
+      background: var(--white);
+      color: var(--bg-deep);
+      border-color: var(--white);
+    }
+    .disc-select-arrow {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid currentColor;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: transform var(--transition-fast);
+    }
+    .disc-select-btn:hover .disc-select-arrow { transform: translateX(3px); }
+
+    /* ── Right: Swiper ── */
+    .disc-right {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-right: 0;
+      overflow: visible;
+    }
+
+    .disc-swiper-outer { overflow: visible; }
+
+    .disc-swiper {
+      overflow: visible !important;
+      padding: 20px 0 !important;
+    }
+    .disc-swiper .swiper-wrapper { align-items: center; }
+
+    .disc-slide {
+      width: 250px !important;
+      height: 360px;
+      border-radius: 22px;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.45s cubic-bezier(0.22,1,0.36,1),
+                  opacity 0.45s ease,
+                  box-shadow 0.45s ease;
+      opacity: 0.5;
+      transform: scale(0.9);
+    }
+    .disc-slide.swiper-slide-active {
+      opacity: 1;
+      transform: scale(1.0);
+      box-shadow: 0 28px 64px rgba(0,0,0,0.55);
+    }
+    .disc-slide img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+    }
+    .disc-card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to top,
+        rgba(8,10,13,0.92) 0%,
+        rgba(8,10,13,0.25) 50%,
+        transparent 72%
+      );
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 16px 14px;
+    }
+    .disc-card-category {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 4px;
+    }
+    .disc-card-name {
+      font-family: var(--font-display);
+      font-size: clamp(18px, 2vw, 24px);
+      font-weight: 700;
+      line-height: 1.0;
+      color: var(--white);
+      text-transform: uppercase;
+    }
+
+    /* Rank medal on first card */
+    .disc-rank-medal {
+      position: absolute;
+      top: 14px; right: 14px;
+      font-size: 20px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    }
+
+    /* Navigation bar */
+    .disc-nav-bar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 24px;
+      padding: 0 4px;
+    }
+    .disc-nav-btn {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.05);
+      color: var(--text-muted);
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition-fast);
+      flex-shrink: 0;
+    }
+    .disc-nav-btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+    .disc-nav-btn:disabled { opacity: 0.2; pointer-events: none; }
+
+    .disc-progress-track {
+      flex: 1;
+      max-width: 160px;
+      height: 1.5px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 99px;
+      position: relative;
+    }
+    .disc-progress-fill {
+      position: absolute;
+      top: 0; left: 0;
+      height: 100%;
+      background: var(--accent);
+      border-radius: 99px;
+      transition: width 0.45s cubic-bezier(0.22,1,0.36,1);
+    }
+    .disc-counter {
+      font-family: var(--font-display);
+      font-size: 30px;
+      font-weight: 600;
+      color: var(--white);
+      letter-spacing: -0.02em;
+      line-height: 1;
+      margin-left: auto;
+    }
+    .disc-counter sub {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text-dim);
+      vertical-align: baseline;
+      margin-left: 1px;
+    }
+
+    @media (max-width: 900px) {
+      .disc-layout {
+        flex-direction: column;
+        padding: calc(var(--nav-h) + 40px) 20px 60px;
+        gap: 40px;
+      }
+      .disc-left { flex: unset; width: 100%; padding: 0; }
+      .disc-right { width: 100%; }
+      .disc-place-title { font-size: clamp(36px, 10vw, 60px); }
+    }
+
+    /* ═══════════════════════════════════════════════
+       SECTION 3 — DECISION HUB (Phần 4)
+    ═══════════════════════════════════════════════ */
+    #section-decision {
+      background: var(--bg-deep);
+      padding: calc(var(--nav-h) + 48px) clamp(20px, 5vw, 72px) 80px;
+    }
+    .dec-header { margin-bottom: 36px; }
+    .dec-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 8px;
+    }
+    .dec-title {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 4vw, 46px); font-weight: 700;
+      color: var(--white); line-height: 1;
+    }
+    .dec-subtitle {
+      font-size: 13px; color: var(--text-dim);
+      margin-top: 6px; font-family: var(--font-mono); letter-spacing: 0.05em;
+    }
+    .dec-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 24px; align-items: start;
+    }
+    @media (max-width: 1024px) { .dec-layout { grid-template-columns: 1fr; } }
+
+    /* Map */
+    .dec-map-wrap {
+      border-radius: 20px; overflow: hidden; height: 520px;
+      border: 1px solid var(--border-glass); position: relative;
+    }
+    #decision-map { width: 100%; height: 100%; }
+    #decision-map .leaflet-tile-pane { filter: brightness(0.72) saturate(0.65); }
+
+    /* Right column */
+    .dec-right-col { display: flex; flex-direction: column; gap: 16px; }
+
+    /* Weather card */
+    .dec-weather-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      border-radius: 20px; padding: 24px;
+    }
+    .dec-weather-top {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; margin-bottom: 18px;
+    }
+    .dec-weather-icon { font-size: 52px; line-height: 1; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); }
+    .dec-weather-main { text-align: right; }
+    .dec-weather-temp {
+      font-family: var(--font-display); font-size: 52px;
+      font-weight: 700; line-height: 1; color: var(--white);
+    }
+    .dec-weather-temp sup {
+      font-size: 20px; vertical-align: top; margin-top: 8px;
+      display: inline-block; color: var(--text-muted);
+    }
+    .dec-weather-cond {
+      font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-top: 2px;
+    }
+    .dec-weather-location { font-size: 11px; color: var(--text-dim); font-family: var(--font-mono); margin-top: 2px; }
+    .dec-weather-comment {
+      font-size: 13px; color: rgba(240,237,232,0.65); line-height: 1.6;
+      padding: 12px 14px; background: rgba(255,255,255,0.03);
+      border-radius: 10px; border-left: 2px solid var(--accent); margin-bottom: 18px;
+    }
+    .dec-metric-row {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 6px;
+    }
+    .dec-metric-label {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim);
+    }
+    .dec-metric-value { font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--text-muted); }
+    .dec-bar-track { height: 4px; background: rgba(255,255,255,0.07); border-radius: 99px; margin-bottom: 14px; overflow: hidden; }
+    .dec-bar-fill { height: 100%; border-radius: 99px; transition: width 1s cubic-bezier(0.22,1,0.36,1); }
+    .dec-bar-fill.rain { background: #4a9eff; }
+    .dec-bar-fill.temp { background: linear-gradient(to right, #52b788, #f4a261, #e05252); }
+    .dec-chart-wrap { position: relative; height: 130px; margin-top: 4px; }
+
+    /* Direction buttons */
+    .dec-directions-card {
+      background: var(--bg-card); border: 1px solid var(--border-glass);
+      border-radius: 20px; padding: 20px;
+    }
+    .dec-directions-label {
+      font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 14px;
+    }
+    .dec-dir-btn {
+      display: flex; align-items: center; gap: 12px; width: 100%;
+      padding: 12px 14px; border-radius: 12px;
+      border: 1px solid var(--border-glass); background: rgba(255,255,255,0.02);
+      color: var(--text-primary); font-size: 13px; margin-bottom: 8px;
+      text-decoration: none; transition: all var(--transition-fast); cursor: pointer; text-align: left;
+    }
+    .dec-dir-btn:last-child { margin-bottom: 0; }
+    .dec-dir-btn:hover { background: rgba(200,169,110,0.07); border-color: rgba(200,169,110,0.25); color: var(--white); }
+    .dec-dir-medal { font-size: 18px; flex-shrink: 0; }
+    .dec-dir-info { flex: 1; min-width: 0; }
+    .dec-dir-name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; }
+    .dec-dir-dist { font-size: 11px; color: var(--text-dim); font-family: var(--font-mono); margin-top: 1px; }
+    .dec-dir-arrow { color: var(--accent); flex-shrink: 0; opacity: 0.7; }
+    .dec-dir-btn:hover .dec-dir-arrow { opacity: 1; }
+
+    /* ═══════════════════════════════════════════════
+       AUTH MODAL (Phần 5 — skeleton structure đặt sẵn)
+    ═══════════════════════════════════════════════ */
+    #auth-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--transition);
+    }
+    #auth-modal.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .modal-box {
+      position: relative;
+      z-index: 1;
+      width: 420px;
+      max-width: calc(100vw - 32px);
+      background: #13161b;
+      border: 1px solid var(--border-glass);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+      transform: translateY(16px) scale(0.97);
+      transition: transform var(--transition);
+    }
+    #auth-modal.open .modal-box {
+      transform: translateY(0) scale(1);
+    }
+    .modal-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-glass);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted);
+      font-size: 14px;
+      transition: all var(--transition-fast);
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.1); color: var(--white); }
+
+    .modal-title {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+    .modal-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+
+    /* Auth tabs */
+    .auth-tabs {
+      display: flex;
+      gap: 4px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 24px;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 8px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: all var(--transition-fast);
+      text-align: center;
+    }
+    .auth-tab.active {
+      background: var(--accent);
+      color: var(--bg-deep);
+    }
+    .auth-tab:hover:not(.active) { color: var(--white); }
+
+    /* Form fields */
+    .form-group { margin-bottom: 14px; }
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    .form-input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-glass);
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-size: 14px;
+      color: var(--white);
+      outline: none;
+      transition: all var(--transition-fast);
+    }
+    .form-input:focus {
+      border-color: rgba(200,169,110,0.4);
+      background: rgba(255,255,255,0.08);
+      box-shadow: 0 0 0 3px rgba(200,169,110,0.1);
+    }
+    .form-input::placeholder { color: var(--text-dim); }
+
+    /* Auth buttons */
+    .btn-primary {
+      width: 100%;
+      padding: 13px;
+      border-radius: 10px;
+      background: var(--accent);
+      color: var(--bg-deep);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      letter-spacing: 0.05em;
+      transition: all var(--transition-fast);
+      box-shadow: 0 4px 16px rgba(200,169,110,0.25);
+      margin-top: 6px;
+    }
+    .btn-primary:hover { background: #d4b87e; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(200,169,110,0.35); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.5; pointer-events: none; }
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 16px 0;
+      color: var(--text-dim);
+      font-size: 11px;
+      font-family: var(--font-mono);
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-glass);
+    }
+
+    .btn-google {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-glass);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 500;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: all var(--transition-fast);
+    }
+    .btn-google:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.15); }
+
+    .auth-error {
+      font-size: 12px;
+      color: var(--danger);
+      margin-top: 8px;
+      min-height: 16px;
+      font-family: var(--font-mono);
+    }
+
+    .guest-note {
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-glass);
+    }
+    .guest-note-text {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+    }
+    .guest-note a {
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       SIDE PANEL — Yêu thích (skeleton for Part 6)
+    ═══════════════════════════════════════════════ */
+    #side-panel {
+      position: fixed;
+      top: 0; right: 0;
+      width: 340px;
+      height: 100vh;
+      background: #13161b;
+      border-left: 1px solid var(--border-glass);
+      z-index: 950;
+      transform: translateX(100%);
+      transition: transform var(--transition);
+      display: flex;
+      flex-direction: column;
+    }
+    #side-panel.open { transform: translateX(0); }
+    .side-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 24px 16px;
+      border-bottom: 1px solid var(--border-glass);
+      flex-shrink: 0;
+    }
+    .side-panel-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 600;
+    }
+    .side-panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+    .side-panel-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 12px;
+      color: var(--text-dim);
+    }
+    .side-panel-empty-icon { font-size: 40px; opacity: 0.3; }
+    .side-panel-empty-text { font-size: 13px; font-family: var(--font-mono); }
+    .side-panel-login-cta {
+      font-size: 12px;
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    /* Favorite item card */
+    .fav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border-glass);
+      background: rgba(255,255,255,0.02);
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    .fav-item:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+    .fav-thumb {
+      width: 52px; height: 52px;
+      border-radius: 8px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--bg-card);
+    }
+    .fav-info { flex: 1; min-width: 0; }
+    .fav-name {
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .fav-cat { font-size: 11px; color: var(--text-dim); font-family: var(--font-mono); margin-top: 2px; }
+    .fav-remove {
+      color: var(--text-dim);
+      font-size: 14px;
+      padding: 4px;
+      border-radius: 6px;
+      flex-shrink: 0;
+      transition: all var(--transition-fast);
+    }
+    .fav-remove:hover { color: var(--danger); background: rgba(224,82,82,0.1); }
+
+    /* ═══════════════════════════════════════════════
+   DETAIL MODAL — Phần 3
+    ═══════════════════════════════════════════════ */
+    #detail-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 980;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #detail-modal.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .detail-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    /* Modal panel */
+    .detail-panel {
+      position: relative;
+      z-index: 1;
+      width: min(860px, calc(100vw - 32px));
+      max-height: calc(100vh - 80px);
+      background: #0e1014;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 24px;
+      display: flex;
+      overflow: hidden;
+      box-shadow: 0 32px 96px rgba(0, 0, 0, 0.7);
+      transform: translateY(24px) scale(0.97);
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #detail-modal.open .detail-panel {
+      transform: translateY(0) scale(1);
+    }
+
+    /* Left image strip */
+    .detail-img-strip {
+      width: 260px;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .detail-img-strip img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .detail-img-strip-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to right,
+        rgba(14, 16, 20, 0) 60%,
+        rgba(14, 16, 20, 0.95) 100%
+      );
+    }
+    .detail-img-rank {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      font-size: 26px;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+    }
+
+    /* Right content */
+    .detail-content {
+      flex: 1;
+      min-width: 0;
+      overflow-y: auto;
+      padding: 36px 36px 32px 28px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-dim) transparent;
+    }
+    .detail-content::-webkit-scrollbar { width: 4px; }
+    .detail-content::-webkit-scrollbar-thumb { background: var(--accent-dim); border-radius: 99px; }
+
+    /* Close button */
+    .detail-close {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 10;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition-fast);
+    }
+    .detail-close:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: var(--white);
+    }
+
+    /* Header */
+    .detail-category-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-dim);
+      border: 1px solid rgba(200, 169, 110, 0.2);
+      border-radius: 99px;
+      padding: 4px 12px;
+      margin-bottom: 12px;
+    }
+    .detail-title {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700;
+      line-height: 0.95;
+      letter-spacing: -0.01em;
+      color: var(--white);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .detail-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .detail-stars { color: var(--accent); letter-spacing: 2px; font-size: 13px; }
+    .detail-rating-num {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .detail-distance-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border-glass);
+      border-radius: 99px;
+      padding: 3px 11px;
+    }
+
+    /* Mini map */
+    .detail-map-wrap {
+      border-radius: 14px;
+      overflow: hidden;
+      height: 160px;
+      margin-bottom: 22px;
+      border: 1px solid var(--border-glass);
+      position: relative;
+    }
+    #detail-mini-map {
+      width: 100%;
+      height: 100%;
+    }
+    /* Override Leaflet tiles to match dark theme */
+    .detail-map-wrap .leaflet-tile-pane { filter: brightness(0.7) saturate(0.6); }
+
+    /* Description */
+    .detail-section-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    .detail-description {
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: rgba(240, 237, 232, 0.72);
+      margin-bottom: 22px;
+    }
+
+    /* Fact box */
+    .detail-fact-box {
+      background: rgba(200, 169, 110, 0.06);
+      border: 1px solid rgba(200, 169, 110, 0.15);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 22px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .detail-fact-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .detail-fact-text {
+      font-size: 13px;
+      line-height: 1.65;
+      color: rgba(240, 237, 232, 0.65);
+      font-style: italic;
+    }
+
+    /* Info rows */
+    .detail-info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 26px;
+    }
+    .detail-info-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+    .detail-info-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border-glass);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .detail-info-label { color: var(--text-dim); font-family: var(--font-mono); font-size: 11px; margin-right: 4px; }
+    .detail-info-value { color: var(--text-primary); }
+    .detail-info-value.open  { color: var(--success); }
+    .detail-info-value.free  { color: var(--accent); }
+
+    /* Actions */
+    .detail-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .detail-btn-maps {
+      flex: 1;
+      min-width: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 12px;
+      background: var(--accent);
+      color: var(--bg-deep);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      text-decoration: none;
+    }
+    .detail-btn-maps:hover {
+      background: #d4b87e;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(200,169,110,0.35);
+    }
+    .detail-btn-save {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      border: 1.5px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.04);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition-fast);
+      flex-shrink: 0;
+    }
+    .detail-btn-save:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+    .detail-btn-save.active { border-color: var(--accent); color: var(--accent); background: rgba(200,169,110,0.15); }
+    .detail-btn-save.active svg { fill: var(--accent); }
+
+    /* Responsive */
+    @media (max-width: 680px) {
+      .detail-img-strip { display: none; }
+      .detail-content { padding: 32px 20px 24px; }
+      .detail-close { top: 10px; left: 10px; }
+    }
+
+    /* ═══════════════════════════════════════════════
+       KEYFRAMES
+    ═══════════════════════════════════════════════ */
+    /* ═══════════════════════════════════════════════
+       HISTORY MODAL
+    ═══════════════════════════════════════════ */
+    #history-modal {
+      position: fixed; inset: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity var(--transition);
+    }
+    #history-modal.open { opacity: 1; pointer-events: auto; }
+    #history-modal.open .modal-box { transform: translateY(0) scale(1); }
+
+    .hist-empty {
+      text-align: center; padding: 40px 20px;
+      color: var(--text-dim); font-family: var(--font-mono); font-size: 13px;
+    }
+    .hist-empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.3; }
+
+    .hist-item {
+      display: flex; flex-direction: column; gap: 8px;
+      padding: 14px; border-radius: 12px;
+      border: 1px solid var(--border-glass);
+      background: rgba(255,255,255,0.02);
+      margin-bottom: 8px; cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    .hist-item:hover {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(200,169,110,0.2);
+    }
+    .hist-item:last-child { margin-bottom: 0; }
+
+    .hist-item-top {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 8px;
+    }
+    .hist-query {
+      font-size: 13px; font-weight: 500; color: var(--text-primary);
+      line-height: 1.4; flex: 1;
+    }
+    .hist-time {
+      font-size: 10px; color: var(--text-dim);
+      font-family: var(--font-mono); white-space: nowrap; flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .hist-results {
+      display: flex; gap: 6px; flex-wrap: wrap;
+    }
+    .hist-result-chip {
+      font-size: 10px; font-family: var(--font-mono);
+      padding: 3px 9px; border-radius: 99px;
+      background: var(--accent-dim); color: var(--accent);
+      border: 1px solid rgba(200,169,110,0.2);
+      white-space: nowrap;
+    }
+    .hist-replay-btn {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; font-family: var(--font-mono);
+      color: var(--accent); opacity: 0;
+      transition: opacity var(--transition-fast);
+    }
+    .hist-item:hover .hist-replay-btn { opacity: 1; }
+
+    /* ─── Loading spinner inside modal ─── */
+    .hist-loading {
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; padding: 32px;
+      color: var(--text-dim); font-family: var(--font-mono); font-size: 12px;
+    }
+    .hist-spinner {
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 2px solid rgba(200,169,110,0.2);
+      border-top-color: var(--accent);
+      animation: spin 0.7s linear infinite;
+    }
+
+    /* Google button hint note */
+    .google-note {
+      font-size: 11px; color: var(--text-dim);
+      font-family: var(--font-mono); text-align: center;
+      margin-top: 10px; padding: 8px 12px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 8px; border: 1px solid var(--border-glass);
+      line-height: 1.5;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateY(0) scale(1) translateX(0); }
+      25%       { transform: translateY(0) scale(1) translateX(-6px); }
+      75%       { transform: translateY(0) scale(1) translateX(6px); }
+    }
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.3; transform: scaleY(1); }
+      50% { opacity: 0.9; transform: scaleY(1.08); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; transform: scale(1); }
+      50% { opacity: 0.9; transform: scale(1.4); }
+    }
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to   { transform: translateX(0);    opacity: 1; }
+    }
+
+    /* ═══════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+      #navbar { padding: 0 20px; }
+      .nav-links { display: none; }
+      .hero-title { font-size: clamp(40px, 12vw, 72px); }
+      .hero-weather-badge { bottom: 80px; right: 16px; }
+      #side-panel { width: 100vw; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       NAVBAR
+  ═══════════════════════════════════════════ -->
+  <nav id="navbar">
+    <!-- Brand -->
+    <div class="nav-brand" id="nav-brand" title="Về trang chủ">
+      <div class="nav-brand-icon">✦</div>
+      <span class="nav-brand-text">Smart Tourism</span>
+    </div>
+
+    <!-- Center links -->
+    <ul class="nav-links">
+      <li><a href="#section-hero" class="active" data-scroll="section-hero">Trang Chủ</a></li>
+      <li><a href="#section-discovery" data-scroll="section-discovery">Địa Điểm</a></li>
+      <li><a href="#section-decision" data-scroll="section-decision">Thời Tiết</a></li>
+      <li><a href="#" id="nav-about">Về Chúng Tôi</a></li>
+    </ul>
+
+    <!-- Actions -->
+    <div class="nav-actions">
+      <!-- Search (scroll to hero & focus input) -->
+      <button class="nav-btn nav-search" id="nav-search-btn" title="Tìm kiếm">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </button>
+
+      <!-- Favorites -->
+      <button class="nav-btn" id="nav-fav-btn" title="Yêu thích">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        <span class="badge" id="fav-badge">0</span>
+      </button>
+
+      <!-- User (guest state) -->
+      <span class="guest-tag" id="nav-guest-tag">GUEST</span>
+      <div class="nav-user-wrap" id="nav-user-wrap" style="display:none;">
+        <button class="nav-btn" id="nav-user-btn" title="Tài khoản">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+        </button>
+        <div class="user-dropdown" id="user-dropdown">
+          <div class="dropdown-user-info">
+            <div class="dropdown-user-name" id="dropdown-name">Người dùng</div>
+            <div class="dropdown-user-email" id="dropdown-email">user@example.com</div>
+          </div>
+          <div class="dropdown-item" id="dd-history">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Lịch sử tìm kiếm
+          </div>
+          <div class="dropdown-item" id="dd-favorites">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            Yêu thích
+          </div>
+          <div class="dropdown-sep"></div>
+          <div class="dropdown-item danger" id="dd-logout">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Đăng xuất
+          </div>
+        </div>
+      </div>
+
+      <!-- Login button (guest) -->
+      <button class="nav-login-btn" id="nav-login-btn" title="Đăng nhập">
+        ĐĂNG NHẬP
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════
+       SECTION 1 — HERO
+  ═══════════════════════════════════════════ -->
+  <section id="section-hero">
+    <!-- Background -->
+    <div class="hero-bg" id="hero-bg"></div>
+    <div class="hero-overlay"></div>
+
+    <!-- Main content -->
+    <div class="hero-content">
+      <span class="hero-eyebrow">✦ Hệ thống AI gợi ý địa điểm</span>
+
+      <h1 class="hero-title">
+        Smart<br/><em>Tourism</em>
+      </h1>
+
+      <p class="hero-sub">
+        Nhập bất cứ điều bạn cảm thấy — AI sẽ tìm địa điểm hoàn hảo cho bạn
+      </p>
+
+      <!-- Search -->
+      <div class="hero-search-wrap">
+        <div class="hero-search-box">
+          <input
+            type="text"
+            class="hero-search-input"
+            id="main-search-input"
+            placeholder="VD: Đang stress, trời mưa, đi với bạn bè có ghế 300k ở Quận 1..."
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button class="hero-search-btn" id="search-btn" aria-label="Tìm kiếm">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Quick chips -->
+        <div class="hero-chips">
+          <span class="hero-chip" data-query="Muốn chill yên tĩnh, dưới 100k, gần trung tâm">☕ Chill buổi tối</span>
+          <span class="hero-chip" data-query="Đi cùng gia đình cuối tuần, trẻ em, không gian rộng">👨‍👩‍👧 Gia đình cuối tuần</span>
+          <span class="hero-chip" data-query="Hẹn hò lãng mạn, không gian đẹp, tầm 300k">❤️ Hẹn hò lãng mạn</span>
+          <span class="hero-chip" data-query="Trời mưa, muốn ăn uống trong nhà, hội bạn">🌧️ Trời mưa ở nhà</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weather mini badge -->
+    <div class="hero-weather-badge" id="hero-weather-badge">
+      <span class="weather-badge-icon" id="hero-weather-icon">⛅</span>
+      <div class="weather-badge-info">
+        <span class="weather-badge-temp" id="hero-weather-temp">--°C</span>
+        <span class="weather-badge-desc" id="hero-weather-desc">Đang tải...</span>
+      </div>
+    </div>
+
+    <!-- Scroll cue (hidden after results) -->
+    <div class="hero-scroll-cue" id="hero-scroll-cue">
+      <div class="scroll-line"></div>
+      <span class="scroll-label">Cuộn xuống</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       SECTION 2 — DISCOVERY (rendered by JS Part 2)
+  ═══════════════════════════════════════════ -->
+  <section id="section-discovery">
+    <div class="discovery-placeholder" id="discovery-placeholder">
+      <div class="discovery-placeholder-dot"></div>
+      <span>Đang phân tích kết quả...</span>
+    </div>
+    <!-- JS Part 2 sẽ inject HTML vào đây -->
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       SECTION 3 — DECISION HUB (rendered by JS Part 4)
+  ═══════════════════════════════════════════ -->
+  <section id="section-decision">
+    <!-- JS Part 4 sẽ inject HTML vào đây -->
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       AUTH MODAL
+  ═══════════════════════════════════════════ -->
+  <div id="auth-modal" role="dialog" aria-modal="true" aria-label="Đăng nhập">
+    <div class="modal-backdrop" id="auth-backdrop"></div>
+    <div class="modal-box">
+      <button class="modal-close" id="auth-modal-close" aria-label="Đóng">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <h2 class="modal-title">Chào mừng</h2>
+      <p class="modal-sub">Đăng nhập để lưu địa điểm yêu thích và xem lịch sử</p>
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Đăng nhập</button>
+        <button class="auth-tab" data-tab="signup">Tạo tài khoản</button>
+      </div>
+
+      <!-- Login Form -->
+      <div id="auth-form-login">
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email</label>
+          <input type="email" class="form-input" id="login-email" placeholder="ban@example.com" autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="login-password">Mật khẩu</label>
+          <input type="password" class="form-input" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <div class="auth-error" id="login-error"></div>
+        <button class="btn-primary" id="login-submit">Đăng nhập</button>
+
+        <div class="auth-divider">hoặc</div>
+        <button class="btn-google" id="google-login-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Tiếp tục với Google
+        </button>
+      </div>
+
+      <!-- Signup Form -->
+      <div id="auth-form-signup" style="display:none;">
+        <div class="form-group">
+          <label class="form-label" for="signup-email">Email</label>
+          <input type="email" class="form-input" id="signup-email" placeholder="ban@example.com" autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="signup-password">Mật khẩu</label>
+          <input type="password" class="form-input" id="signup-password" placeholder="Ít nhất 6 ký tự" autocomplete="new-password" />
+        </div>
+        <div class="auth-error" id="signup-error"></div>
+        <button class="btn-primary" id="signup-submit">Tạo tài khoản</button>
+
+        <div class="auth-divider">hoặc</div>
+        <button class="btn-google" id="google-signup-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Tiếp tục với Google
+        </button>
+      </div>
+
+      <!-- Guest CTA -->
+      <div class="guest-note">
+        <p class="guest-note-text">
+          Không muốn đăng nhập?
+          <a id="continue-as-guest">Dùng thử với tư cách khách →</a>
+        </p>
+      </div>
+    </div>
+  </div>
+  <!-- ═══════════════════════════════════════════
+     DETAIL MODAL — Phần 3
+  ═══════════════════════════════════════════ -->
+  <div id="detail-modal" role="dialog" aria-modal="true">
+    <div class="detail-backdrop" id="detail-backdrop"></div>
+    <div class="detail-panel">
+
+      <!-- Close -->
+      <button class="detail-close" id="detail-close" aria-label="Đóng">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+
+      <!-- Left image strip -->
+      <div class="detail-img-strip" id="detail-img-strip">
+        <img id="detail-img" src="" alt="" />
+        <div class="detail-img-strip-overlay"></div>
+        <div class="detail-img-rank" id="detail-img-rank"></div>
+      </div>
+
+      <!-- Right content -->
+      <div class="detail-content">
+
+        <div class="detail-category-badge" id="detail-category">
+          <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+          <span id="detail-category-text">--</span>
+        </div>
+
+        <h2 class="detail-title" id="detail-title">--</h2>
+
+        <div class="detail-meta-row">
+          <span class="detail-stars" id="detail-stars">★★★★★</span>
+          <span class="detail-rating-num" id="detail-rating">0.0/5</span>
+          <span class="detail-distance-chip">
+            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/>
+            </svg>
+            <span id="detail-distance">-- km</span>
+          </span>
+        </div>
+
+        <!-- Mini map -->
+        <div class="detail-map-wrap">
+          <div id="detail-mini-map"></div>
+        </div>
+
+        <!-- Description -->
+        <div class="detail-section-label">Mô tả</div>
+        <p class="detail-description" id="detail-desc">--</p>
+
+        <!-- Fact -->
+        <div class="detail-fact-box">
+          <div class="detail-fact-icon">💡</div>
+          <div class="detail-fact-text" id="detail-fact">--</div>
+        </div>
+
+        <!-- Info rows -->
+        <div class="detail-info-list" id="detail-info-list">
+          <div class="detail-info-row">
+            <div class="detail-info-icon">🕐</div>
+            <span class="detail-info-label">Trạng thái:</span>
+            <span class="detail-info-value open" id="detail-status">Mở cửa</span>
+          </div>
+          <div class="detail-info-row">
+            <div class="detail-info-icon">🎫</div>
+            <span class="detail-info-label">Vé vào cửa:</span>
+            <span class="detail-info-value" id="detail-price-row">--</span>
+          </div>
+          <div class="detail-info-row">
+            <div class="detail-info-icon">🏷️</div>
+            <span class="detail-info-label">Loại hình:</span>
+            <span class="detail-info-value" id="detail-tag-row">--</span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="detail-actions">
+          <a class="detail-btn-maps" id="detail-btn-maps" href="#" target="_blank" rel="noopener">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+            </svg>
+            Chỉ đường Google Maps
+          </a>
+          <button class="detail-btn-save" id="detail-btn-save" title="Lưu yêu thích">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
+        </div>
+
+      </div><!-- end detail-content -->
+    </div><!-- end detail-panel -->
+  </div>
+  <!-- ═══════════════════════════════════════════
+       SIDE PANEL — Yêu thích
+  ═══════════════════════════════════════════ -->
+  <div id="side-panel">
+    <div class="side-panel-header">
+      <h3 class="side-panel-title">❤ Yêu thích</h3>
+      <button class="nav-btn" id="close-side-panel">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="side-panel-body" id="side-panel-body">
+      <!-- Injected by JS -->
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       HISTORY MODAL
+  ═══════════════════════════════════════════ -->
+  <div id="history-modal" role="dialog" aria-modal="true" aria-label="Lịch sử tìm kiếm">
+    <div class="modal-backdrop" id="history-backdrop"></div>
+    <div class="modal-box" style="width:520px;">
+      <button class="modal-close" id="history-modal-close" aria-label="Đóng">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <h2 class="modal-title">Lịch sử tìm kiếm</h2>
+      <p class="modal-sub" id="history-modal-sub">Các lượt tìm kiếm gần đây của bạn</p>
+      <div id="history-list" style="margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       TOAST
+  ═══════════════════════════════════════════ -->
+  <div id="toast">
+    <span id="toast-icon">⚠</span>
+    <span id="toast-text">Lỗi không xác định</span>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       SCRIPTS
+  ═══════════════════════════════════════════ -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+  /* ═══════════════════════════════════════════════════════════
+     APP STATE — Single source of truth cho toàn bộ app
+     Các phần sau chỉ cần đọc/ghi vào APP_STATE
+  ═══════════════════════════════════════════════════════════ */
+  const APP_STATE = {
+    // Auth
+    user: null,           // { uid, email, idToken } hoặc null (guest)
+    isGuest: true,
+
+    // Search results
+    lastQuery: '',
+    lastLocation: [10.7769, 106.7009],  // default TP.HCM center
+    results: null,        // SuggestionResponse từ backend
+    places: [],           // top_places array
+    weather: null,        // weather_info object
+    contextSummary: '',
+
+    // UI state
+    activePlaceIndex: 0,  // index đang focus ở Tầng 2
+    favorites: [],        // [place object] — persist localStorage
+    mapInstance: null,    // Leaflet map instance (Phần 4)
+    resultsRevealed: false,
+
+    // Config
+    API_BASE: 'http://localhost:8000',
+  };
+
+  /* ═══════════════════════════════════════════════════════════
+     UTILITIES
+  ═══════════════════════════════════════════════════════════ */
+  const $ = (sel, ctx = document) => ctx.querySelector(sel);
+  const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
+
+  function showToast(msg, type = 'error', duration = 3500) {
+    const toast = $('#toast');
+    $('#toast-icon').textContent = type === 'success' ? '✓' : '⚠';
+    $('#toast-text').textContent = msg;
+    toast.className = type === 'success' ? 'show success' : 'show';
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => { toast.className = ''; }, duration);
+  }
+
+  function smoothScrollTo(el) {
+    if (!el) return;
+    const y = el.getBoundingClientRect().top + window.scrollY - APP_STATE._navH;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+  }
+
+  // Favorites theo từng user (uid) — guest không lưu persistent
+  function _favKey() {
+    return APP_STATE.user?.uid ? 'st_fav_' + APP_STATE.user.uid : null;
+  }
+  function saveFavorites() {
+    const key = _favKey();
+    if (!key) return;
+    try { localStorage.setItem(key, JSON.stringify(APP_STATE.favorites)); } catch(e) {}
+  }
+  function loadFavorites() {
+    const key = _favKey();
+    if (!key) { APP_STATE.favorites = []; return; }
+    try {
+      const raw = localStorage.getItem(key);
+      APP_STATE.favorites = raw ? JSON.parse(raw) : [];
+    } catch(e) { APP_STATE.favorites = []; }
+  }
+
+  // Weather icon map
+  const WEATHER_ICONS = {
+    CLEAR: '☀️', CLOUDS: '⛅', RAIN: '🌧️',
+    DRIZZLE: '🌦️', STORM: '⛈️', MIST: '🌫️', SNOW: '❄️',
+  };
+
+  /* ═══════════════════════════════════════════════════════════
+     API CLIENT — mirrors api_client.py
+  ═══════════════════════════════════════════════════════════ */
+  const API = {
+    base: APP_STATE.API_BASE,
+
+    headers(withAuth = false) {
+      const h = { 'Content-Type': 'application/json' };
+      if (withAuth && APP_STATE.user?.idToken) {
+        h['Authorization'] = `Bearer ${APP_STATE.user.idToken}`;
+      }
+      return h;
+    },
+
+    async post(path, body, auth = false) {
+      const res = await fetch(this.base + path, {
+        method: 'POST',
+        headers: this.headers(auth),
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || `HTTP ${res.status}`);
+      }
+      return res.json();
+    },
+
+    async get(path, params = {}, auth = false) {
+      const url = new URL(this.base + path);
+      Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+      const res = await fetch(url, { headers: this.headers(auth) });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || `HTTP ${res.status}`);
+      }
+      return res.json();
+    },
+
+    async login(email, password) {
+      return this.post('/auth/login', { email, password });
+    },
+
+    async signup(email, password) {
+      return this.post('/auth/signup', { email, password });
+    },
+
+    async suggest(query, location) {
+      return this.post('/suggest', { query, location }, !!APP_STATE.user);
+    },
+
+    async history(limit = 5) {
+      return this.get('/suggest/history', { limit }, true);
+    },
+
+    async health() {
+      return this.get('/health');
+    },
+  };
+
+  /* ═══════════════════════════════════════════════════════════
+     AUTH MANAGER
+  ═══════════════════════════════════════════════════════════ */
+  const Auth = {
+    login(userData) {
+      APP_STATE.user = userData;
+      APP_STATE.isGuest = false;
+      loadFavorites();            // load favorites của user này từ localStorage
+      this._updateUI();
+      this._persistSession(userData);
+      showToast(`Chào mừng, ${userData.email}!`, 'success');
+    },
+
+    logout() {
+      APP_STATE.user = null;
+      APP_STATE.isGuest = true;
+      APP_STATE.favorites = [];   // xóa favorites khỏi state khi logout
+      this._updateUI();
+      localStorage.removeItem('st_session');
+      showToast('Đã đăng xuất', 'success', 2000);
+    },
+
+    _persistSession(data) {
+      try { localStorage.setItem('st_session', JSON.stringify(data)); } catch(e) {}
+    },
+
+    restoreSession() {
+      try {
+        const raw = localStorage.getItem('st_session');
+        if (raw) {
+          const data = JSON.parse(raw);
+          if (data?.idToken) {
+            APP_STATE.user = data;
+            APP_STATE.isGuest = false;
+            loadFavorites();      // load favorites của user này
+            this._updateUI();
+            return true;
+          }
+        }
+      } catch(e) {}
+      return false;
+    },
+
+    _updateUI() {
+      const loggedIn = !APP_STATE.isGuest;
+
+      // Guest elements — chỉ hiện khi chưa đăng nhập
+      const guestEls = ['nav-guest-tag', 'nav-login-btn'];
+      guestEls.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = loggedIn ? 'none' : '';
+      });
+
+      // Logged-in elements — chỉ hiện khi đã đăng nhập
+      const userWrap = document.getElementById('nav-user-wrap');
+      if (userWrap) userWrap.style.display = loggedIn ? 'block' : 'none';
+
+      if (loggedIn && APP_STATE.user) {
+        const emailEl = document.getElementById('dropdown-email');
+        const nameEl  = document.getElementById('dropdown-name');
+        if (emailEl) emailEl.textContent = APP_STATE.user.email || '';
+        if (nameEl)  nameEl.textContent  = (APP_STATE.user.email || '').split('@')[0];
+      }
+
+      // Update side panel
+      SidePanel.render();
+    },
+  };
+
+  /* ═══════════════════════════════════════════════════════════
+     SEARCH HANDLER
+  ═══════════════════════════════════════════════════════════ */
+  const Search = {
+    async run(query) {
+      if (!query.trim()) return;
+
+      const btn = $('#search-btn');
+      const input = $('#main-search-input');
+
+      // Loading state
+      btn.classList.add('loading');
+      input.disabled = true;
+      APP_STATE.lastQuery = query;
+
+      try {
+        // Get user location (with fallback to HCMC)
+        const loc = await this._getLocation();
+        APP_STATE.lastLocation = loc;
+
+        const data = await API.suggest(query, loc);
+
+        APP_STATE.results       = data;
+        APP_STATE.places        = data.top_places || [];
+        APP_STATE.weather       = data.weather_info || null;
+        APP_STATE.contextSummary = data.user_context_summary || '';
+        APP_STATE.activePlaceIndex = 0;
+
+        if (APP_STATE.places.length === 0) {
+          showToast('Không tìm thấy địa điểm phù hợp. Thử mô tả khác nhé!');
+          return;
+        }
+
+        // Update weather badge
+        this._updateWeatherBadge(data.weather_info);
+
+        // Reveal sections & scroll
+        this._revealResults();
+
+      } catch (err) {
+        console.error('[Search]', err);
+        showToast(err.message || 'Không kết nối được server. Kiểm tra backend đang chạy chưa?');
+      } finally {
+        btn.classList.remove('loading');
+        input.disabled = false;
+      }
+    },
+
+    async _getLocation() {
+      return new Promise((resolve) => {
+        if (!navigator.geolocation) { resolve(APP_STATE.lastLocation); return; }
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve([pos.coords.latitude, pos.coords.longitude]),
+          ()    => resolve(APP_STATE.lastLocation),
+          { timeout: 4000 }
+        );
+      });
+    },
+
+    _updateWeatherBadge(w) {
+      if (!w) return;
+      const badge = $('#hero-weather-badge');
+      $('#hero-weather-icon').textContent = WEATHER_ICONS[w.condition] || '🌡️';
+      $('#hero-weather-temp').textContent = `${Math.round(w.temperature)}°C`;
+      $('#hero-weather-desc').textContent = w.condition_vi || w.condition;
+      badge.classList.add('visible');
+    },
+
+    _revealResults() {
+      const disc = $('#section-discovery');
+      const dec  = $('#section-decision');
+
+      disc.classList.add('revealed');
+      dec.classList.add('revealed');
+      APP_STATE.resultsRevealed = true;
+
+      // Hide scroll cue
+      $('#hero-scroll-cue').style.opacity = '0';
+
+      // Trigger Part 2 render (will be defined in Part 2)
+      if (typeof Discovery !== 'undefined') Discovery.render(APP_STATE.places, APP_STATE.weather);
+      if (typeof DecisionHub !== 'undefined') DecisionHub.render(APP_STATE.places, APP_STATE.weather, APP_STATE.lastLocation);
+
+      // Smooth scroll to Tầng 2
+      setTimeout(() => smoothScrollTo(disc), 100);
+    },
+  };
+
+  
+  /* ═══════════════════════════════════════════════════════════
+     SIDE PANEL
+  ═══════════════════════════════════════════════════════════ */
+  const SidePanel = {
+    open() {
+      $('#side-panel').classList.add('open');
+      this.render();
+    },
+    close() {
+      $('#side-panel').classList.remove('open');
+    },
+    toggle() {
+      if ($('#side-panel').classList.contains('open')) this.close();
+      else this.open();
+    },
+
+    render() {
+      const body = $('#side-panel-body');
+      if (!body) return;
+
+      if (APP_STATE.favorites.length === 0) {
+        body.innerHTML = `
+          <div class="side-panel-empty">
+            <div class="side-panel-empty-icon">♡</div>
+            <div class="side-panel-empty-text">Chưa có địa điểm yêu thích</div>
+            ${APP_STATE.isGuest ? `<span class="side-panel-login-cta" id="sp-login-cta">Đăng nhập để lưu →</span>` : ''}
+          </div>`;
+        const cta = $('#sp-login-cta');
+        if (cta) cta.addEventListener('click', () => { this.close(); AuthModal.open(); });
+        return;
+      }
+
+      body.innerHTML = APP_STATE.favorites.map((place, i) => `
+        <div class="fav-item" data-index="${i}" data-id="${place.id}">
+          <img class="fav-thumb" src="${place.image_url || ''}" alt="${place.name}"
+               onerror="this.style.background='#1a1d22';this.removeAttribute('src')" />
+          <div class="fav-info">
+            <div class="fav-name">${place.name}</div>
+            <div class="fav-cat">${place.category || ''} · ${place.distance?.toFixed(1) || '?'} km</div>
+          </div>
+          <button class="fav-remove" data-id="${place.id}" title="Xóa">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>`).join('');
+
+      // Events
+      body.querySelectorAll('.fav-item').forEach(el => {
+        el.addEventListener('click', (e) => {
+          if (e.target.closest('.fav-remove')) {
+            e.stopPropagation();
+            Favorites.remove(el.dataset.id);
+          } else {
+            const place = APP_STATE.favorites.find(f => f.id === el.dataset.id);
+            this.close();
+            if (place) {
+              // Reveal section-decision nếu chưa
+              const decSec = document.getElementById('section-decision');
+              if (decSec) decSec.classList.add('revealed');
+              smoothScrollTo(decSec || document.getElementById('section-decision'));
+              // Zoom map sau khi scroll xong
+              setTimeout(() => {
+                if (APP_STATE.mapInstance && place.latitude && place.longitude) {
+                  APP_STATE.mapInstance.setView([place.latitude, place.longitude], 16, { animate: true });
+                  // Bounce marker tại vị trí đó
+                  APP_STATE.mapInstance.eachLayer(layer => {
+                    if (layer.getLatLng) {
+                      const ll = layer.getLatLng();
+                      if (Math.abs(ll.lat - place.latitude) < 0.001 && Math.abs(ll.lng - place.longitude) < 0.001) {
+                        layer.openTooltip();
+                      }
+                    }
+                  });
+                }
+              }, 600);
+            }
+          }
+        });
+      });
+
+      // Update badge
+      const badge = $('#fav-badge');
+      if (badge) {
+        badge.textContent = APP_STATE.favorites.length;
+        badge.classList.toggle('visible', APP_STATE.favorites.length > 0);
+      }
+    },
+  };
+
+  /* ═══════════════════════════════════════════════════════════
+     FAVORITES MANAGER
+  ═══════════════════════════════════════════════════════════ */
+  const Favorites = {
+    add(place) {
+      if (!APP_STATE.favorites.find(f => f.id === place.id)) {
+        APP_STATE.favorites.push(place);
+        saveFavorites();
+        SidePanel.render();
+        showToast(`Đã lưu "${place.name}" vào yêu thích ❤️`, 'success', 2500);
+      } else {
+        this.remove(place.id);
+      }
+    },
+    remove(id) {
+      APP_STATE.favorites = APP_STATE.favorites.filter(f => f.id !== id);
+      saveFavorites();
+      SidePanel.render();
+    },
+    has(id) {
+      return APP_STATE.favorites.some(f => f.id === id);
+    },
+  };
+
+  /* ═══════════════════════════════════════════════════════════
+     AUTH MODAL
+  ═══════════════════════════════════════════════════════════ */
+  const AuthModal = {
+    _tab: 'login',
+
+    open(tab = 'login') {
+      this.switchTab(tab);
+      $('#auth-modal').classList.add('open');
+      setTimeout(() => document.addEventListener('keydown', this._onKey), 50);
+    },
+    close() {
+      $('#auth-modal').classList.remove('open');
+      document.removeEventListener('keydown', this._onKey);
+      ['login-error', 'signup-error'].forEach(id => { const el = $(`#${id}`); if(el) el.textContent = ''; });
+    },
+    _onKey(e) { if (e.key === 'Escape') AuthModal.close(); },
+
+    switchTab(tab) {
+      this._tab = tab;
+      $$('.auth-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+      });
+      $('#auth-form-login').style.display  = tab === 'login'  ? 'block' : 'none';
+      $('#auth-form-signup').style.display = tab === 'signup' ? 'block' : 'none';
+    },
+
+    async submitLogin() {
+      const email = $('#login-email').value.trim();
+      const pwd   = $('#login-password').value;
+      const errEl = $('#login-error');
+
+      if (!email || !pwd) {
+        errEl.textContent = '⚠ Vui lòng nhập đầy đủ thông tin';
+        return;
+      }
+
+      const btn = $('#login-submit');
+      const origText = btn.textContent;
+      btn.textContent = 'Đang đăng nhập...';
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+      errEl.textContent = '';
+
+      try {
+        const data = await API.login(email, pwd);
+        Auth.login({ uid: data.uid, email: data.email, idToken: data.idToken });
+        this.close();
+      } catch(err) {
+        errEl.textContent = '✕ Sai email hoặc mật khẩu. Thử lại nhé!';
+        // Shake animation
+        const box = btn.closest('.modal-box');
+        if (box) { box.style.animation = 'shake 0.3s ease'; setTimeout(() => box.style.animation = '', 300); }
+      } finally {
+        btn.textContent = origText;
+        btn.disabled = false;
+        btn.style.opacity = '';
+      }
+    },
+
+    async submitSignup() {
+      const email = $('#signup-email').value.trim();
+      const pwd   = $('#signup-password').value;
+      const errEl = $('#signup-error');
+
+      if (!email || !pwd) {
+        errEl.textContent = '⚠ Vui lòng nhập đầy đủ thông tin';
+        return;
+      }
+      if (pwd.length < 6) {
+        errEl.textContent = '⚠ Mật khẩu phải có ít nhất 6 ký tự';
+        return;
+      }
+      if (!email.includes('@')) {
+        errEl.textContent = '⚠ Email không hợp lệ';
+        return;
+      }
+
+      const btn = $('#signup-submit');
+      const origText = btn.textContent;
+      btn.textContent = 'Đang tạo tài khoản...';
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+      errEl.textContent = '';
+
+      try {
+        await API.signup(email, pwd);
+        showToast('Tạo tài khoản thành công! Đang đăng nhập...', 'success');
+        const data = await API.login(email, pwd);
+        Auth.login({ uid: data.uid, email: data.email, idToken: data.idToken });
+        this.close();
+      } catch(err) {
+        errEl.textContent = '✕ ' + (err.message || 'Tạo tài khoản thất bại. Email có thể đã tồn tại.');
+      } finally {
+        btn.textContent = origText;
+        btn.disabled = false;
+        btn.style.opacity = '';
+      }
+    },
+  };
+
+  /* ═══════════════════════════════════════════════════════════
+     NAV ACTIVE STATE (based on scroll)
+  ═══════════════════════════════════════════════════════════ */
+  function updateNavActive() {
+    const sections = [
+      { id: 'section-hero',      link: '[data-scroll="section-hero"]' },
+      { id: 'section-discovery', link: '[data-scroll="section-discovery"]' },
+      { id: 'section-decision',  link: '[data-scroll="section-decision"]' },
+    ];
+    const scrollY = window.scrollY + window.innerHeight / 3;
+    let current = sections[0].link;
+    sections.forEach(({ id, link }) => {
+      const el = document.getElementById(id);
+      if (el && el.style.display !== 'none' && el.offsetTop <= scrollY) current = link;
+    });
+    $$('.nav-links a').forEach(a => a.classList.remove('active'));
+    const activeLink = $(current);
+    if (activeLink) activeLink.classList.add('active');
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     EVENT BINDINGS — Part 1
+  ═══════════════════════════════════════════════════════════ */
+  document.addEventListener('DOMContentLoaded', () => {
+    // Compute nav height for offset calculations
+    APP_STATE._navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 64;
+
+    // Restore session (loadFavorites được gọi bên trong restoreSession/login)
+    Auth.restoreSession();
+    DetailModal.init();
+    SidePanel.render();
+
+    // ── Search
+    const searchInput = $('#main-search-input');
+    const searchBtn   = $('#search-btn');
+
+    searchBtn.addEventListener('click', () => Search.run(searchInput.value));
+    searchInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') Search.run(searchInput.value);
+    });
+
+    // Quick chips
+    $$('.hero-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        searchInput.value = chip.dataset.query;
+        Search.run(chip.dataset.query);
+      });
+    });
+
+    // ── Navbar: brand click → scroll to top
+    $('#nav-brand').addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // ── Navbar: search icon → scroll to hero & focus input
+    $('#nav-search-btn').addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => searchInput.focus(), 500);
+    });
+
+    // ── Navbar: smooth scroll links
+    $$('[data-scroll]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.getElementById(link.dataset.scroll);
+        if (target && target.classList.contains('revealed') || link.dataset.scroll === 'section-hero') {
+          smoothScrollTo(target || document.getElementById('section-hero'));
+        }
+      });
+    });
+
+    // ── Navbar: favorites
+    $('#nav-fav-btn').addEventListener('click', () => SidePanel.toggle());
+    $('#close-side-panel').addEventListener('click', () => SidePanel.close());
+
+    // ── Navbar: login button (guest)
+    $('#nav-login-btn').addEventListener('click', () => AuthModal.open('login'));
+
+    // ── Navbar: user dropdown
+    const navUserBtn = document.getElementById('nav-user-btn');
+    if (navUserBtn) {
+      navUserBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.getElementById('user-dropdown')?.classList.toggle('open');
+      });
+    }
+    document.addEventListener('click', (e) => {
+      const wrap = $('#nav-user-wrap');
+      if (wrap && !wrap.contains(e.target)) {
+        $('#user-dropdown')?.classList.remove('open');
+      }
+    });
+
+    // ── Dropdown items
+    $('#dd-logout')?.addEventListener('click', () => Auth.logout());
+    $('#dd-favorites')?.addEventListener('click', () => {
+      $('#user-dropdown').classList.remove('open');
+      SidePanel.open();
+    });
+    $('#dd-history')?.addEventListener('click', () => {
+      $('#user-dropdown').classList.remove('open');
+      if (!APP_STATE.user) { AuthModal.open('login'); return; }
+      HistoryModal.open();
+    });
+
+    // ── History Modal
+    document.getElementById('history-modal-close')?.addEventListener('click', () => HistoryModal.close());
+    document.getElementById('history-backdrop')?.addEventListener('click', () => HistoryModal.close());
+
+    // ── Auth Modal
+    $('#nav-guest-tag').addEventListener('click', () => AuthModal.open('login'));
+    $('#auth-modal-close').addEventListener('click', () => AuthModal.close());
+    $('#auth-backdrop').addEventListener('click', () => AuthModal.close());
+    $('#continue-as-guest').addEventListener('click', () => AuthModal.close());
+
+    $$('.auth-tab').forEach(tab => {
+      tab.addEventListener('click', () => AuthModal.switchTab(tab.dataset.tab));
+    });
+
+    $('#login-submit').addEventListener('click',  () => AuthModal.submitLogin());
+    $('#signup-submit').addEventListener('click', () => AuthModal.submitSignup());
+
+    // Enter key in forms
+    ['login-email', 'login-password'].forEach(id => {
+      $(`#${id}`)?.addEventListener('keydown', e => { if(e.key === 'Enter') AuthModal.submitLogin(); });
+    });
+    ['signup-email', 'signup-password'].forEach(id => {
+      $(`#${id}`)?.addEventListener('keydown', e => { if(e.key === 'Enter') AuthModal.submitSignup(); });
+    });
+
+    // ── Google OAuth — Popup flow ──────────────────────────────────────────
+    // Trang cha lắng nghe postMessage từ popup
+    window.addEventListener('message', (e) => {
+      if (e.data?.type !== 'GOOGLE_AUTH_SUCCESS') return;
+      const token = e.data.idToken;
+      if (!token) return;
+      // Verify với backend rồi login
+      API.post('/auth/google', { id_token: token })
+        .then(data => {
+          Auth.login({ uid: data.uid, email: data.email, idToken: data.idToken });
+          AuthModal.close();
+        })
+        .catch(() => showToast('Đăng nhập Google thất bại. Thử lại nhé!'));
+    });
+
+    ['#google-login-btn', '#google-signup-btn'].forEach(sel => {
+      $(sel)?.addEventListener('click', () => {
+        const url = `${APP_STATE.API_BASE}/auth/google/start`;
+        const w = 500, h = 640;
+        const left = Math.round((screen.width  - w) / 2);
+        const top  = Math.round((screen.height - h) / 2);
+        window.open(
+          url, 'google_oauth',
+          `width=${w},height=${h},left=${left},top=${top},` +
+          `toolbar=no,menubar=no,location=no,status=no,scrollbars=yes`
+        );
+      });
+    });
+
+    // ── Nếu trang này CHÍNH LÀ popup (frontend_url trỏ vào đây) ──────────
+    // Khi backend redirect về: http://localhost:8080/?id_token=xxx
+    // Popup nhận URL → gửi token về trang cha → tự đóng
+    (function handlePopupCallback() {
+      const params = new URLSearchParams(window.location.search);
+      const token  = params.get('id_token');
+      if (!token) return; // Không phải callback, bỏ qua
+
+      // Xóa token khỏi URL để tránh lộ khi refresh
+      window.history.replaceState({}, '', window.location.pathname);
+
+      if (window.opener && !window.opener.closed) {
+        // Gửi token về trang cha
+        window.opener.postMessage({ type: 'GOOGLE_AUTH_SUCCESS', idToken: token }, '*');
+        // Đóng popup sau 300ms (chờ postMessage gửi xong)
+        setTimeout(() => window.close(), 300);
+      } else {
+        // Fallback: popup bị mở thành tab mới, tự xử lý login luôn
+        API.post('/auth/google', { id_token: token })
+          .then(data => {
+            Auth.login({ uid: data.uid, email: data.email, idToken: data.idToken });
+            AuthModal.close();
+          })
+          .catch(() => showToast('Đăng nhập Google thất bại'));
+      }
+    })();
+
+    // ── Scroll events
+    window.addEventListener('scroll', updateNavActive, { passive: true });
+    updateNavActive();
+
+    // ── Fetch weather on load (background, no block)
+    fetch(`${APP_STATE.API_BASE}/weather/current?lat=10.7769&lon=106.7009`)
+      .then(r => r.json())
+      .then(w => {
+        $('#hero-weather-icon').textContent = WEATHER_ICONS[w.condition] || '🌡️';
+        $('#hero-weather-temp').textContent = `${Math.round(w.temperature)}°C`;
+        $('#hero-weather-desc').textContent = w.condition_vi || w.condition;
+        $('#hero-weather-badge').classList.add('visible');
+      })
+      .catch(() => {
+        // Silent fail — weather badge stays hidden
+      });
+  });
+
+  /* ═══════════════════════════════════════════════════════════
+     PLACEHOLDER STUBS — Sẽ được ghi đè bởi các Part sau
+  ═══════════════════════════════════════════════════════════ */
+  /* ═══════════════════════════════════════════════════════════
+     HISTORY MODAL MANAGER
+  ═══════════════════════════════════════════════════════════ */
+  const HistoryModal = {
+    open() {
+      const modal = document.getElementById('history-modal');
+      if (!modal) return;
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', this._onKey);
+      this._load();
+    },
+    close() {
+      const modal = document.getElementById('history-modal');
+      if (modal) modal.classList.remove('open');
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', this._onKey);
+    },
+    _onKey(e) { if (e.key === 'Escape') HistoryModal.close(); },
+
+    async _load() {
+      const list = document.getElementById('history-list');
+      const sub  = document.getElementById('history-modal-sub');
+      if (!list) return;
+
+      // Loading state
+      list.innerHTML = '<div class="hist-loading"><div class="hist-spinner"></div>Đang tải lịch sử...</div>';
+
+      if (!APP_STATE.user) {
+        list.innerHTML = '<div class="hist-empty"><div class="hist-empty-icon">🔒</div>Vui lòng đăng nhập để xem lịch sử</div>';
+        return;
+      }
+
+      try {
+        const data = await API.history(10);
+        const items = data.history || [];
+        if (sub) sub.textContent = items.length > 0
+          ? `${items.length} lượt tìm kiếm gần đây của ${APP_STATE.user.email}`
+          : 'Chưa có lịch sử tìm kiếm';
+
+        if (items.length === 0) {
+          list.innerHTML = '<div class="hist-empty"><div class="hist-empty-icon">🔍</div>Bạn chưa tìm kiếm địa điểm nào</div>';
+          return;
+        }
+
+        list.innerHTML = items.map((item, i) => {
+          const results = item.results || [];
+          const time = item.timestamp ? this._formatTime(item.timestamp) : '';
+          const chips = results.slice(0, 3).map(r =>
+            `<span class="hist-result-chip">${r.name || 'Địa điểm'}</span>`
+          ).join('');
+
+          return `<div class="hist-item" data-query="${(item.query||'').replace(/"/g,'&quot;')}">
+            <div class="hist-item-top">
+              <div class="hist-query">${item.query || '(không có nội dung)'}</div>
+              <span class="hist-time">${time}</span>
+            </div>
+            ${results.length > 0 ? `<div class="hist-results">${chips}</div>` : ''}
+            <div class="hist-replay-btn">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+              </svg>
+              Tìm lại
+            </div>
+          </div>`;
+        }).join('');
+
+        // Click để tìm lại
+        list.querySelectorAll('.hist-item').forEach(el => {
+          el.addEventListener('click', () => {
+            const q = el.dataset.query;
+            if (!q) return;
+            this.close();
+            const input = document.getElementById('main-search-input');
+            if (input) input.value = q;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => Search.run(q), 400);
+          });
+        });
+
+      } catch(err) {
+        list.innerHTML = '<div class="hist-empty"><div class="hist-empty-icon">⚠️</div>Không lấy được lịch sử. Thử lại sau.</div>';
+      }
+    },
+
+    _formatTime(isoStr) {
+      try {
+        const d = new Date(isoStr + 'Z'); // UTC từ backend
+        const now = new Date();
+        const diff = Math.floor((now - d) / 1000);
+        if (diff < 60)    return 'Vừa xong';
+        if (diff < 3600)  return `${Math.floor(diff/60)} phút trước`;
+        if (diff < 86400) return `${Math.floor(diff/3600)} giờ trước`;
+        if (diff < 604800)return `${Math.floor(diff/86400)} ngày trước`;
+        return d.toLocaleDateString('vi-VN');
+      } catch(e) { return ''; }
+    },
+  };
+
+  /* ═══════════════════════════════════════════════════════════
+     PART 2 — DISCOVERY SECTION
+     Full Swiper slider + focus panel + animated transitions
+  ═══════════════════════════════════════════════════════════ */
+  var Discovery = {
+    _swiper: null,
+    _places: [],
+    _bgA: null,
+    _bgB: null,
+    _bgActive: 'a',   // which bg div is currently visible
+
+    /* ── Main entry: called by Search._revealResults() ── */
+    render(places, weather) {
+      if (!places || places.length === 0) return;
+      this._places = places;
+
+      const sec = document.getElementById('section-discovery');
+      sec.innerHTML = this._buildHTML(places);
+
+      // Cache bg refs
+      this._bgA = document.getElementById('disc-bg-a');
+      this._bgB = document.getElementById('disc-bg-b');
+
+      // Init Swiper
+      this._initSwiper(places);
+
+      // Bind buttons
+      this._bindEvents();
+
+      // Initial focus
+      setTimeout(() => this._setFocus(0, false), 120);
+    },
+
+    /* ── HTML builder ── */
+    _buildHTML(places) {
+      const MEDALS = ['🥇', '🥈', '🥉'];
+
+      const cards = places.map((p, i) => `
+        <div class="swiper-slide disc-slide" data-index="${i}">
+          <img
+            src="${p.image_url && p.image_url.startsWith('http') ? p.image_url : `https://picsum.photos/seed/${p.id || i}/600/900`}"
+            alt="${p.name}"
+            loading="lazy"
+            onerror="this.src='https://picsum.photos/seed/${(p.id||i)+'x'}/600/900'"
+          />
+          <div class="disc-card-overlay">
+            <div class="disc-card-category">${p.category || ''}</div>
+            <div class="disc-card-name">${p.name}</div>
+          </div>
+          <div class="disc-rank-medal">${MEDALS[i] || ''}</div>
+        </div>`).join('');
+
+      const ctxHtml = APP_STATE.contextSummary ? `
+        <div class="disc-context-bar">
+          <div class="disc-context-dot"></div>
+          Kết quả cho: <strong>${APP_STATE.contextSummary}</strong>
+        </div>` : '';
+
+      return `
+        <!-- Crossfade backgrounds -->
+        <div class="disc-bg" id="disc-bg-a" style="opacity:1;"></div>
+        <div class="disc-bg" id="disc-bg-b" style="opacity:0;"></div>
+        <div class="disc-overlay"></div>
+
+        ${ctxHtml}
+
+        <div class="disc-layout">
+
+          <!-- ── LEFT: Focus panel ── -->
+          <div class="disc-left">
+
+            <div class="disc-anim disc-distance-badge" id="disc-distance">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <circle cx="12" cy="10" r="3"/>
+                <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/>
+              </svg>
+              <span id="disc-dist-val">--</span>
+            </div>
+
+            <div class="disc-anim disc-region-text" id="disc-region" style="transition-delay:.04s">--</div>
+
+            <h2 class="disc-anim disc-place-title" id="disc-title" style="transition-delay:.08s">--</h2>
+
+            <div class="disc-anim disc-meta-row" id="disc-meta" style="transition-delay:.11s">
+              <span class="disc-stars" id="disc-stars">★★★★★</span>
+              <span class="disc-rating-num" id="disc-rating">0.0</span>
+              <span class="disc-price-tag" id="disc-price">--</span>
+            </div>
+
+            <p class="disc-anim disc-place-desc" id="disc-desc" style="transition-delay:.15s">--</p>
+
+            <div class="disc-anim disc-actions" id="disc-actions" style="transition-delay:.19s">
+              <button class="disc-bookmark-btn" id="disc-bookmark-btn" title="Lưu yêu thích">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+              </button>
+              <button class="disc-select-btn" id="disc-select-btn">
+                Chọn địa điểm
+                <span class="disc-select-arrow">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── RIGHT: Swiper ── -->
+          <div class="disc-right">
+            <div class="disc-swiper-outer">
+              <div class="swiper disc-swiper" id="disc-swiper">
+                <div class="swiper-wrapper">${cards}</div>
+              </div>
+            </div>
+
+            <!-- Nav bar -->
+            <div class="disc-nav-bar">
+              <button class="disc-nav-btn" id="disc-prev" aria-label="Địa điểm trước">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <polyline points="15 18 9 12 15 6"/>
+                </svg>
+              </button>
+              <button class="disc-nav-btn" id="disc-next" aria-label="Địa điểm tiếp theo">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+              <div class="disc-progress-track">
+                <div class="disc-progress-fill" id="disc-progress-fill" style="width:0%"></div>
+              </div>
+              <div class="disc-counter" id="disc-counter">
+                01<sub>/${String(places.length).padStart(2,'0')}</sub>
+              </div>
+            </div>
+          </div>
+
+        </div>`;
+    },
+
+    /* ── Swiper init ── */
+    _initSwiper(places) {
+      this._swiper = new Swiper('#disc-swiper', {
+        slidesPerView: 'auto',
+        spaceBetween: 22,
+        centeredSlides: true,      // FIX: center card active, nav mới hoạt động
+        grabCursor: true,
+        loop: false,
+        resistance: true,
+        resistanceRatio: 0.7,
+        watchSlidesProgress: true, // FIX: track slide active chính xác hơn
+        on: {
+          slideChange: (swiper) => {
+            this._setFocus(swiper.realIndex, true);
+          },
+        },
+      });
+
+      // Click any card to focus it
+      document.querySelectorAll('.disc-slide').forEach(slide => {
+        slide.addEventListener('click', () => {
+          const idx = parseInt(slide.dataset.index);
+          if (!isNaN(idx) && this._swiper) {
+            this._swiper.slideTo(idx);
+          }
+        });
+      });
+    },
+
+    /* ── Event bindings ── */
+    _bindEvents() {
+      document.getElementById('disc-prev')?.addEventListener('click', () => {
+        this._swiper?.slidePrev();
+      });
+      document.getElementById('disc-next')?.addEventListener('click', () => {
+        this._swiper?.slideNext();
+      });
+
+      document.getElementById('disc-bookmark-btn')?.addEventListener('click', () => {
+        const place = this._places[APP_STATE.activePlaceIndex];
+        if (!place) return;
+        if (APP_STATE.isGuest) {
+          showToast('Đăng nhập để lưu yêu thích ❤️');
+          AuthModal.open('login');
+          return;
+        }
+        Favorites.add(place);
+        this._updateBookmarkState(place.id);
+      });
+
+      document.getElementById('disc-select-btn')?.addEventListener('click', () => {
+        if (typeof DetailModal !== 'undefined') {
+          DetailModal.open(APP_STATE.activePlaceIndex);
+        } else {
+          // Stub — Part 3 will replace this
+          const place = this._places[APP_STATE.activePlaceIndex];
+          showToast(`"${place?.name}" — Chi tiết sẽ có ở Phần 3`, 'success', 2500);
+        }
+      });
+    },
+
+    /* ── Set focus to a place index ── */
+    _setFocus(index, animated) {
+      APP_STATE.activePlaceIndex = index;
+      const place = this._places[index];
+      if (!place) return;
+
+      const ANIM_ELS = ['disc-distance','disc-region','disc-title','disc-meta','disc-desc','disc-actions'];
+
+      if (animated) {
+        // Step 1: fade out animated elements
+        ANIM_ELS.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.remove('in');
+        });
+        // Step 2: after short pause, update + fade in
+        setTimeout(() => this._applyFocus(place, ANIM_ELS, index), 80);
+      } else {
+        this._applyFocus(place, ANIM_ELS, index);
+      }
+    },
+
+    _applyFocus(place, animEls, index) {
+      // ── Background crossfade ──
+      const imgUrl = place.image_url && place.image_url.startsWith('http')
+        ? place.image_url
+        : `https://picsum.photos/seed/${place.id || index}/1920/1080`;
+
+      const incoming = this._bgActive === 'a' ? this._bgB : this._bgA;
+      const outgoing = this._bgActive === 'a' ? this._bgA : this._bgB;
+
+      if (incoming) {
+        incoming.style.backgroundImage = `url('${imgUrl}')`;
+        incoming.style.opacity = '1';
+      }
+      if (outgoing) {
+        outgoing.style.opacity = '0';
+      }
+      this._bgActive = this._bgActive === 'a' ? 'b' : 'a';
+
+      // ── Left panel content ──
+      const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+
+      set('disc-dist-val', place.distance != null ? `${Number(place.distance).toFixed(1)} km từ bạn` : '-- km');
+      set('disc-region', place.category || 'Địa điểm');
+      set('disc-title', place.name || '');
+
+      // Rating stars
+      const r = place.rating || 0;
+      const fullS = Math.round(r);
+      const starsEl = document.getElementById('disc-stars');
+      if (starsEl) starsEl.textContent = '★'.repeat(fullS) + '☆'.repeat(Math.max(0, 5 - fullS));
+      set('disc-rating', `${Number(r).toFixed(1)}/5`);
+
+      // Price
+      const priceEl = document.getElementById('disc-price');
+      if (priceEl) {
+        priceEl.textContent = place.price === 0 ? 'Miễn phí' : `${Number(place.price).toLocaleString('vi-VN')}đ`;
+      }
+
+      // Description — prefer AI description, fall back to tag
+      set('disc-desc', place.description || place.tag || `Địa điểm ${place.category || ''} tại TP.HCM`);
+
+      // Bookmark state
+      this._updateBookmarkState(place.id);
+
+      // Counter
+      const counterEl = document.getElementById('disc-counter');
+      if (counterEl) {
+        counterEl.innerHTML = `${String(index + 1).padStart(2, '0')}<sub>/${String(this._places.length).padStart(2, '0')}</sub>`;
+      }
+
+      // Progress bar
+      const prog = document.getElementById('disc-progress-fill');
+      if (prog) {
+        const pct = this._places.length > 1
+          ? (index / (this._places.length - 1)) * 100
+          : 100;
+        prog.style.width = `${pct}%`;
+      }
+
+      // Nav button disabled state
+      const prev = document.getElementById('disc-prev');
+      const next = document.getElementById('disc-next');
+      if (prev) prev.disabled = index === 0;
+      if (next) next.disabled = index === this._places.length - 1;
+
+      // ── Staggered fade-in ──
+      requestAnimationFrame(() => {
+        animEls.forEach((id, i) => {
+          const el = document.getElementById(id);
+          if (el) setTimeout(() => el.classList.add('in'), i * 45);
+        });
+      });
+    },
+
+    _updateBookmarkState(placeId) {
+      const btn = document.getElementById('disc-bookmark-btn');
+      if (!btn) return;
+      const faved = Favorites.has(placeId);
+      btn.classList.toggle('active', faved);
+    },
+
+    // Public: gọi từ DecisionHub khi click pin trên map
+    focusPlace(index) {
+      if (index >= 0 && index < this._places.length) {
+        this._setFocus(index, true);
+        // Nếu Swiper đang chạy thì sync slide
+        if (this._swiper) this._swiper.slideTo(index);
+      }
+    },
+  };
+
+  /* ═══════════════════════════════════════════════════════════
+   DETAIL MODAL — Phần 3
+  ═══════════════════════════════════════════════════════════ */
+  var DetailModal = {
+    _miniMap: null,
+    _currentPlace: null,
+    _MEDALS: ['🥇', '🥈', '🥉'],
+
+    open(index) {
+      const place = APP_STATE.places[index];
+      if (!place) return;
+      this._currentPlace = place;
+
+      this._populate(place, index);
+      document.getElementById('detail-modal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+
+      // Init mini-map after modal visible
+      setTimeout(() => this._initMiniMap(place), 120);
+
+      // Keyboard close
+      document.addEventListener('keydown', this._onKey);
+    },
+
+    close() {
+      document.getElementById('detail-modal').classList.remove('open');
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', this._onKey);
+
+      // Destroy mini-map so it re-inits cleanly next time
+      if (this._miniMap) {
+        this._miniMap.remove();
+        this._miniMap = null;
+      }
+    },
+
+    _onKey(e) { if (e.key === 'Escape') DetailModal.close(); },
+
+    _populate(place, index) {
+      const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+
+      // Image strip
+      const img = document.getElementById('detail-img');
+      if (img) {
+        img.src = place.image_url && place.image_url.startsWith('http')
+          ? place.image_url
+          : `https://picsum.photos/seed/${place.id || index}/600/900`;
+        img.alt = place.name;
+      }
+      set('detail-img-rank', this._MEDALS[index] || '');
+
+      // Header
+      set('detail-category-text', place.category || 'Địa điểm');
+      set('detail-title', place.name || '');
+
+      // Stars
+      const r = place.rating || 0;
+      const starsEl = document.getElementById('detail-stars');
+      if (starsEl) {
+        const full = Math.round(r);
+        starsEl.textContent = '★'.repeat(full) + '☆'.repeat(Math.max(0, 5 - full));
+      }
+      set('detail-rating', `${Number(r).toFixed(1)}/5`);
+      set('detail-distance', place.distance != null ? `${Number(place.distance).toFixed(1)} km từ bạn` : '--');
+
+      // Description & Fact
+      set('detail-desc', place.description || `Địa điểm ${place.category || ''} nổi bật tại TP.HCM.`);
+      set('detail-fact', place.fact || 'Hãy đến tận nơi để cảm nhận không khí thực sự của địa điểm này.');
+
+      // Info rows
+      const priceEl = document.getElementById('detail-price-row');
+      if (priceEl) {
+        if (place.price === 0) {
+          priceEl.textContent = 'Miễn phí';
+          priceEl.className = 'detail-info-value free';
+        } else {
+          priceEl.textContent = `${Number(place.price).toLocaleString('vi-VN')}đ`;
+          priceEl.className = 'detail-info-value';
+        }
+      }
+      set('detail-tag-row', place.tag || place.category || '--');
+
+      // Google Maps link
+      const mapsBtn = document.getElementById('detail-btn-maps');
+      if (mapsBtn && place.latitude && place.longitude) {
+        mapsBtn.href = `https://www.google.com/maps/dir/?api=1&destination=${place.latitude},${place.longitude}`;
+      }
+
+      // Save button state
+      this._updateSaveBtn(place.id);
+    },
+
+    _initMiniMap(place) {
+      // Clear old container content
+      const container = document.getElementById('detail-mini-map');
+      if (!container) return;
+
+      // Re-create container to avoid Leaflet "already initialized" error
+      container.innerHTML = '';
+      container._leaflet_id = null;
+
+      const lat = place.latitude || 10.7769;
+      const lon = place.longitude || 106.7009;
+
+      this._miniMap = L.map('detail-mini-map', {
+        center: [lat, lon],
+        zoom: 15,
+        zoomControl: false,
+        attributionControl: false,
+        dragging: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        touchZoom: false,
+      });
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+      }).addTo(this._miniMap);
+
+      // Custom pin marker
+      const icon = L.divIcon({
+        html: `<div style="
+          width:28px;height:28px;border-radius:50%;
+          background:var(--accent);
+          border:3px solid #fff;
+          box-shadow:0 4px 12px rgba(0,0,0,0.4);
+          display:flex;align-items:center;justify-content:center;
+          font-size:13px;
+        ">📍</div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+        className: '',
+      });
+
+      L.marker([lat, lon], { icon })
+        .addTo(this._miniMap)
+        .bindPopup(`<b>${place.name}</b>`, { closeButton: false })
+        .openPopup();
+
+      // User location marker (if available)
+      const [uLat, uLon] = APP_STATE.lastLocation;
+      if (uLat && uLon) {
+        const userIcon = L.divIcon({
+          html: `<div style="
+            width:14px;height:14px;border-radius:50%;
+            background:#4a9eff;border:2px solid #fff;
+            box-shadow:0 2px 8px rgba(74,158,255,0.5);
+          "></div>`,
+          iconSize: [14, 14],
+          iconAnchor: [7, 7],
+          className: '',
+        });
+        L.marker([uLat, uLon], { icon: userIcon }).addTo(this._miniMap);
+
+        // Draw line user → place
+        L.polyline([[uLat, uLon], [lat, lon]], {
+          color: '#4a9eff',
+          weight: 2,
+          opacity: 0.5,
+          dashArray: '5 6',
+        }).addTo(this._miniMap);
+
+        // Fit bounds to show both
+        this._miniMap.fitBounds([[uLat, uLon], [lat, lon]], { padding: [24, 24] });
+      }
+    },
+
+    _updateSaveBtn(placeId) {
+      const btn = document.getElementById('detail-btn-save');
+      if (!btn) return;
+      const faved = Favorites.has(placeId);
+      btn.classList.toggle('active', faved);
+    },
+
+    _bindEvents() {
+      // Close button
+      document.getElementById('detail-close')?.addEventListener('click', () => this.close());
+      document.getElementById('detail-backdrop')?.addEventListener('click', () => this.close());
+
+      // Save button
+      document.getElementById('detail-btn-save')?.addEventListener('click', () => {
+        if (!this._currentPlace) return;
+        if (APP_STATE.isGuest) {
+          this.close();
+          AuthModal.open('login');
+          showToast('Đăng nhập để lưu yêu thích ❤️');
+          return;
+        }
+        Favorites.add(this._currentPlace);
+        this._updateSaveBtn(this._currentPlace.id);
+      });
+    },
+
+    init() {
+      this._bindEvents();
+    },
+  };
+
+  /* ═══════════════════════════════════════════════════════════
+     PART 4 — DECISION HUB
+     Bản đồ Leaflet toàn cảnh + Weather widget + Chart + Directions
+  ═══════════════════════════════════════════════════════════ */
+  var DecisionHub = {
+    _map: null,
+    _markers: [],
+    _weatherChart: null,
+    _MEDALS: ['🥇', '🥈', '🥉'],
+    _COLORS: ['#c8a96e', '#4a9eff', '#52b788'],
+
+    /* ── Weather helpers ── */
+    _ICONS: { CLEAR:'☀️', CLOUDS:'⛅', RAIN:'🌧️', DRIZZLE:'🌦️', STORM:'⛈️', MIST:'🌫️', SNOW:'❄️' },
+    _comment(w) {
+      if (!w) return 'Thời tiết ổn định, thích hợp để khám phá.';
+      const c = w.condition;
+      if (c === 'CLEAR')   return `🌞 Nắng đẹp ${Math.round(w.temperature)}°C — lý tưởng để xuất phát ngay!`;
+      if (c === 'RAIN')    return `🌧️ Trời đang mưa — ưu tiên chọn địa điểm trong nhà nhé.`;
+      if (c === 'STORM')   return `⛈️ Có dông bão — nên hoãn lại hoặc chọn nơi an toàn trong nhà.`;
+      if (c === 'CLOUDS')  return `⛅ Nhiều mây, nhiệt độ dễ chịu — rất phù hợp để đi dạo ngoài trời.`;
+      if (c === 'DRIZZLE') return `🌦️ Mưa nhỏ lất phất — nhớ mang theo ô cho chắc!`;
+      if (c === 'MIST')    return `🌫️ Sương mù nhẹ, tầm nhìn hạn chế — lái xe cẩn thận.`;
+      return `Thời tiết hiện tại ${w.condition_vi || c}.`;
+    },
+
+    /* ── Build HTML ── */
+    _buildHTML(places, weather) {
+      const w = weather || {};
+      const icon = this._ICONS[w.condition] || '🌡️';
+      const temp = w.temperature ? Math.round(w.temperature) : '--';
+      const rainPct = w.rain_probability != null ? Math.round(w.rain_probability * 100) : 0;
+      const tempPct = w.temperature ? Math.min(100, Math.round(((w.temperature - 15) / 25) * 100)) : 50;
+
+      const dirBtns = places.map((p, i) => `
+        <a class="dec-dir-btn" id="dec-dir-${i}"
+           href="https://www.google.com/maps/dir/?api=1&destination=${p.latitude},${p.longitude}"
+           target="_blank" rel="noopener">
+          <span class="dec-dir-medal">${this._MEDALS[i] || (i+1)}</span>
+          <span class="dec-dir-info">
+            <span class="dec-dir-name">${p.name}</span>
+            <span class="dec-dir-dist">${p.distance != null ? p.distance.toFixed(1) + ' km từ bạn' : '--'}</span>
+          </span>
+          <svg class="dec-dir-arrow" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>`).join('');
+
+      return `
+        <div id="decision-inner">
+          <!-- Header -->
+          <div class="dec-header">
+            <div class="dec-eyebrow">✦ Bước cuối cùng</div>
+            <h2 class="dec-title">Ra quyết định</h2>
+            <p class="dec-subtitle">Xem bản đồ, thời tiết thực tế và chỉ đường đến địa điểm bạn chọn</p>
+          </div>
+
+          <div class="dec-layout">
+            <!-- Cột trái: Bản đồ -->
+            <div>
+              <div class="dec-map-wrap">
+                <div id="decision-map"></div>
+                <!-- Map legend overlay -->
+                <div id="dec-map-legend" style="
+                  position:absolute; bottom:16px; left:16px; z-index:500;
+                  background:rgba(10,12,15,0.8); backdrop-filter:blur(12px);
+                  border:1px solid rgba(255,255,255,0.08); border-radius:12px;
+                  padding:10px 14px; display:flex; flex-direction:column; gap:7px;">
+                  <div style="display:flex;align-items:center;gap:8px;font-size:11px;font-family:var(--font-mono);color:rgba(240,237,232,0.5);">
+                    <div style="width:10px;height:10px;border-radius:50%;background:#4a9eff;border:2px solid #fff;flex-shrink:0;"></div>
+                    Vị trí của bạn
+                  </div>
+                  ${places.map((p,i) => `
+                  <div style="display:flex;align-items:center;gap:8px;font-size:11px;font-family:var(--font-mono);color:rgba(240,237,232,0.5);">
+                    <div style="width:10px;height:10px;border-radius:50%;background:${this._COLORS[i]};border:2px solid #fff;flex-shrink:0;"></div>
+                    ${p.name}
+                  </div>`).join('')}
+                </div>
+              </div>
+            </div>
+
+            <!-- Cột phải: Weather + Directions -->
+            <div class="dec-right-col">
+
+              <!-- Weather Card -->
+              <div class="dec-weather-card">
+                <div class="dec-weather-top">
+                  <div>
+                    <div class="dec-weather-icon">${icon}</div>
+                    <div style="font-size:12px;color:var(--text-dim);font-family:var(--font-mono);margin-top:6px;">
+                      ${w.location_name || 'TP. Hồ Chí Minh'}
+                    </div>
+                  </div>
+                  <div class="dec-weather-main">
+                    <div class="dec-weather-temp">${temp}<sup>°C</sup></div>
+                    <div class="dec-weather-cond">${w.condition_vi || w.condition || 'N/A'}</div>
+                  </div>
+                </div>
+
+                <!-- Comment -->
+                <div class="dec-weather-comment">${this._comment(w)}</div>
+
+                <!-- Metrics -->
+                <div class="dec-metric-row">
+                  <span class="dec-metric-label">Xác suất mưa</span>
+                  <span class="dec-metric-value">${rainPct}%</span>
+                </div>
+                <div class="dec-bar-track">
+                  <div class="dec-bar-fill rain" id="dec-rain-bar" style="width:0%"></div>
+                </div>
+
+                <div class="dec-metric-row">
+                  <span class="dec-metric-label">Nhiệt độ</span>
+                  <span class="dec-metric-value">${temp}°C</span>
+                </div>
+                <div class="dec-bar-track">
+                  <div class="dec-bar-fill temp" id="dec-temp-bar" style="width:0%"></div>
+                </div>
+
+                <!-- Mini chart: Nhiệt độ theo giờ (giả lập từ temp thực) -->
+                <div style="margin-top:14px;">
+                  <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px;">
+                    Xu hướng nhiệt độ hôm nay
+                  </div>
+                  <div class="dec-chart-wrap">
+                    <canvas id="weather-chart"></canvas>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Directions Card -->
+              <div class="dec-directions-card">
+                <div class="dec-directions-label">🗺 Chỉ đường Google Maps</div>
+                ${dirBtns}
+              </div>
+
+            </div><!-- /dec-right-col -->
+          </div><!-- /dec-layout -->
+        </div><!-- /decision-inner -->
+      `;
+    },
+
+    /* ── Init Leaflet map ── */
+    _initMap(places, userCoords) {
+      const [uLat, uLon] = userCoords;
+
+      // Nếu map đã tồn tại thì destroy trước
+      if (this._map) {
+        this._map.remove();
+        this._map = null;
+        this._markers = [];
+      }
+
+      this._map = L.map('decision-map', {
+        center: [uLat, uLon],
+        zoom: 13,
+        zoomControl: true,
+        attributionControl: false,
+      });
+
+      // Lưu vào APP_STATE để SidePanel dùng
+      APP_STATE.mapInstance = this._map;
+
+      // Dark tile layer
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19,
+      }).addTo(this._map);
+
+      // ── User marker ──
+      const userIcon = L.divIcon({
+        html: `<div style="
+          width:16px;height:16px;border-radius:50%;
+          background:#4a9eff;border:3px solid #fff;
+          box-shadow:0 0 0 4px rgba(74,158,255,0.25), 0 4px 12px rgba(0,0,0,0.4);
+        "></div>`,
+        iconSize: [16, 16], iconAnchor: [8, 8], className: '',
+      });
+      L.marker([uLat, uLon], { icon: userIcon })
+        .addTo(this._map)
+        .bindTooltip('<b>📍 Bạn đang ở đây</b>', { permanent: false, direction: 'top' });
+
+      // ── Place markers ──
+      places.forEach((place, i) => {
+        const lat = place.latitude, lon = place.longitude;
+        if (!lat || !lon) return;
+
+        const color = this._COLORS[i] || '#c8a96e';
+        const medal = this._MEDALS[i] || (i + 1);
+
+        const placeIcon = L.divIcon({
+          html: `<div style="
+            width:40px;height:40px;border-radius:50%;
+            background:${color};border:3px solid #fff;
+            box-shadow:0 4px 16px rgba(0,0,0,0.5);
+            display:flex;align-items:center;justify-content:center;
+            font-size:17px;cursor:pointer;
+            transition:transform 0.2s;
+          " onmouseenter="this.style.transform='scale(1.2)'"
+             onmouseleave="this.style.transform='scale(1)'"
+          >${medal}</div>`,
+          iconSize: [40, 40], iconAnchor: [20, 20], className: '',
+        });
+
+        const imgSrc = place.image_url && place.image_url.startsWith('http')
+          ? place.image_url
+          : `https://picsum.photos/seed/${place.id || i}/120/80`;
+
+        const tooltipHtml = `
+          <div style="
+            font-family:'DM Sans',sans-serif;
+            width:200px;
+          ">
+            <img src="${imgSrc}" alt="${place.name}"
+              style="width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:block;"
+              onerror="this.style.display='none'" />
+            <div style="font-weight:600;font-size:13px;color:#111;margin-bottom:2px;">${place.name}</div>
+            <div style="font-size:11px;color:#666;">${place.category || ''} · ${place.distance != null ? place.distance.toFixed(1) + ' km' : ''}</div>
+            <div style="font-size:11px;color:#c8a96e;margin-top:2px;">★ ${Number(place.rating || 0).toFixed(1)} · ${medal}</div>
+          </div>`;
+
+        const marker = L.marker([lat, lon], { icon: placeIcon })
+          .addTo(this._map)
+          .bindTooltip(tooltipHtml, {
+            direction: 'top',
+            offset: [0, -24],
+            className: 'dec-leaflet-tooltip',
+            sticky: false,
+          });
+
+        // Click marker → scroll lên Tầng 2 + mở Detail Modal
+        marker.on('click', () => {
+          const disc = document.getElementById('section-discovery');
+          if (disc) {
+            const y = disc.getBoundingClientRect().top + window.scrollY - 64;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+          }
+          setTimeout(() => {
+            if (typeof Discovery !== 'undefined') Discovery.focusPlace(i);
+            if (typeof DetailModal !== 'undefined') DetailModal.open(i);
+          }, 500);
+        });
+
+        this._markers.push(marker);
+
+        // Dashed line: user → place
+        L.polyline([[uLat, uLon], [lat, lon]], {
+          color, weight: 2, opacity: 0.4, dashArray: '6 8',
+        }).addTo(this._map);
+      });
+
+      // Fit map to show all markers
+      const allCoords = [
+        [uLat, uLon],
+        ...places.filter(p => p.latitude && p.longitude).map(p => [p.latitude, p.longitude]),
+      ];
+      if (allCoords.length > 1) {
+        this._map.fitBounds(allCoords, { padding: [48, 48] });
+      }
+    },
+
+    /* ── Animate bars ── */
+    _animateBars(rainPct, tempPct) {
+      // Delay để CSS transition chạy sau khi DOM mount
+      setTimeout(() => {
+        const rainBar = document.getElementById('dec-rain-bar');
+        const tempBar = document.getElementById('dec-temp-bar');
+        if (rainBar) rainBar.style.width = `${rainPct}%`;
+        if (tempBar) tempBar.style.width = `${Math.max(5, tempPct)}%`;
+      }, 300);
+    },
+
+    /* ── Weather chart (Chart.js) ── */
+    _initChart(baseTemp) {
+      const canvas = document.getElementById('weather-chart');
+      if (!canvas || typeof Chart === 'undefined') return;
+
+      // Destroy old chart if exists
+      if (this._weatherChart) {
+        this._weatherChart.destroy();
+        this._weatherChart = null;
+      }
+
+      // Simulate hourly temps from base: morning cool → afternoon peak → evening drop
+      const now = new Date().getHours();
+      const hours = Array.from({ length: 8 }, (_, i) => {
+        const h = (now - 3 + i + 24) % 24;
+        return `${h}:00`;
+      });
+      const base = baseTemp || 30;
+      const temps = hours.map((_, i) => {
+        const h = (now - 3 + i + 24) % 24;
+        // Peak at 13-14h, cool at 5-6h
+        const offset = Math.sin(((h - 6) / 24) * Math.PI * 2) * 4;
+        return +(base + offset + (Math.random() - 0.5) * 0.8).toFixed(1);
+      });
+
+      const gradient = canvas.getContext('2d').createLinearGradient(0, 0, 0, 130);
+      gradient.addColorStop(0, 'rgba(200,169,110,0.3)');
+      gradient.addColorStop(1, 'rgba(200,169,110,0.0)');
+
+      this._weatherChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: hours,
+          datasets: [{
+            data: temps,
+            borderColor: '#c8a96e',
+            borderWidth: 2,
+            backgroundColor: gradient,
+            fill: true,
+            tension: 0.45,
+            pointRadius: 3,
+            pointBackgroundColor: '#c8a96e',
+            pointBorderColor: '#0a0c0f',
+            pointBorderWidth: 1.5,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1a1d22',
+              titleColor: '#c8a96e',
+              bodyColor: '#f0ede8',
+              borderColor: 'rgba(255,255,255,0.08)',
+              borderWidth: 1,
+              padding: 8,
+              callbacks: {
+                label: ctx => `${ctx.parsed.y}°C`,
+              },
+            },
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.04)' },
+              ticks: { color: 'rgba(240,237,232,0.35)', font: { family: 'Space Grotesk', size: 10 } },
+            },
+            y: {
+              grid: { color: 'rgba(255,255,255,0.04)' },
+              ticks: {
+                color: 'rgba(240,237,232,0.35)',
+                font: { family: 'Space Grotesk', size: 10 },
+                callback: v => `${v}°`,
+              },
+            },
+          },
+        },
+      });
+    },
+
+    /* ── Main render ── */
+    render(places, weather, userLocation) {
+      const sec = document.getElementById('section-decision');
+      if (!sec) return;
+
+      // Inject HTML (idempotent — chỉ inject 1 lần, update lại data nếu gọi lại)
+      sec.innerHTML = this._buildHTML(places, weather);
+
+      // Animate bars
+      const rainPct = weather?.rain_probability != null ? Math.round(weather.rain_probability * 100) : 0;
+      const tempPct = weather?.temperature ? Math.min(100, Math.round(((weather.temperature - 15) / 25) * 100)) : 50;
+      this._animateBars(rainPct, tempPct);
+
+      // Init chart
+      this._initChart(weather?.temperature);
+
+      // Init map (after DOM is ready)
+      const coords = userLocation || APP_STATE.lastLocation || [10.7769, 106.7009];
+      setTimeout(() => this._initMap(places, coords), 80);
+
+      // Inject Leaflet tooltip CSS nếu chưa có
+      this._injectTooltipCSS();
+    },
+
+    /* ── Leaflet custom tooltip CSS ── */
+    _injectTooltipCSS() {
+      if (document.getElementById('dec-tooltip-style')) return;
+      const style = document.createElement('style');
+      style.id = 'dec-tooltip-style';
+      style.textContent = `
+        .dec-leaflet-tooltip {
+          background: #fff !important;
+          border: none !important;
+          border-radius: 12px !important;
+          padding: 10px !important;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.25) !important;
+          font-family: 'DM Sans', sans-serif !important;
+        }
+        .dec-leaflet-tooltip::before { display: none !important; }
+        .leaflet-tooltip-top.dec-leaflet-tooltip::before {
+          display: block !important;
+          border-top-color: #fff !important;
+        }
+      `;
+      document.head.appendChild(style);
+    },
+  };
+  </script>
+</body>
+</html>

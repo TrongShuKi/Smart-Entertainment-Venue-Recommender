@@ -108,12 +108,15 @@ async def get_suggestions(
     weather_condition = "CLEAR"
     temperature       = 28.0
     rain_probability  = 0.0
-    weather_source    = "user"
+    weather_source    = "fallback"
+    weather_location  = "Trung tâm TP.HCM"
 
     user_stated = parse_weather_from_tags(tags)
 
     if user_stated:
         weather_condition = user_stated
+        weather_source    = "nlp"
+        weather_location  = nlp_location.title()
         logger.info(f"[Weather] Từ NLP: {weather_condition}")
     else:
         try:
@@ -124,10 +127,25 @@ async def get_suggestions(
             weather_condition = w.weatherCondition
             temperature       = w.temperature
             rain_probability  = w.rainProbability
-            weather_source    = "api"
-            logger.info(f"[Weather] API → {weather_condition}, {temperature}°C")
+            weather_source    = "api_name"
+            weather_location  = location_query.title()
+            logger.info(f"[Weather] API Name→ {weather_condition}, {temperature}°C")
         except Exception as exc:
-            logger.warning(f"[Weather] Lỗi API, dùng fallback: {exc}")
+            logger.warning(f"[Weather] Lỗi API tên, thử dùng GPS user: {exc}")
+            if payload.location and len(payload.location) == 2:
+                try:
+                    from backend.services.weather_service import get_weather_by_coords
+                    lat, lon = payload.location[0], payload.location[1]
+                    raw_w = await get_weather_by_coords(lat, lon, current_dt)
+
+                    weather_condition = raw_w["weatherCondition"]
+                    temperature       = raw_w["temperature"]
+                    rain_probability  = raw_w["rainProbability"]
+                    weather_source    = "api_gps"
+                    weather_location  = f"{lat:.2f}, {lon:.2f}"
+                    logger.info(f"[Weather] API GPS→ {weather_condition}, {temperature}°C")
+                except Exception as e_gps:
+                    logger.warning(f"[Weather] Lỗi API GPS: {e_gps}")
 
     # ── 3. Load DB 
     all_places: List[Dict] = await asyncio.to_thread(get_all_places)
@@ -157,6 +175,14 @@ async def get_suggestions(
     # ── 5. Scoring 
     top_scored: List[Dict] = await asyncio.to_thread(
         _engine.generate_recommendations, user_request, user_context, all_places
+    )
+
+    logger.info(
+        f"[Scoring] must_haves={must_haves} | "
+        f"preferences={user_request['preferences']} | "
+        f"current_time={user_context['current_time']:.1f}h | "
+        f"weather={weather_condition} | "
+        f"results={len(top_scored)}"
     )
 
     # Fallback: bỏ filter, lấy Top 3 theo rating nếu lọc hết
@@ -230,6 +256,7 @@ async def get_suggestions(
             temperature      = temperature,
             rain_probability = rain_probability,
             source           = weather_source,
+            location_name    = weather_location,
         ),
         user_context_summary = _build_context_summary(nlp),
     )

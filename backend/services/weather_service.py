@@ -27,7 +27,6 @@ logger = logging.getLogger(__name__)
 # ══════════════════════════════════════════════════════════════════════════════
 # MAPS — dùng bởi chat_router (PHẢI export đủ)
 # ══════════════════════════════════════════════════════════════════════════════
-
 # Từ khoá thời tiết người dùng hay dùng → condition chuẩn OWM
 WEATHER_TAG_MAP: dict[str, str] = {
     "mưa":        "RAIN",   "trời mưa":  "RAIN",   "mưa lớn":   "RAIN",
@@ -53,20 +52,16 @@ WEATHER_CONDITION_VI: dict[str, str] = {
 # ══════════════════════════════════════════════════════════════════════════════
 # SCHEMA
 # ══════════════════════════════════════════════════════════════════════════════
-
 class WeatherResponse(BaseModel):
     weatherCondition: str
     temperature: float
     rainProbability: float
 
-
 # ══════════════════════════════════════════════════════════════════════════════
-# CACHE JSON FILE — thay thế Redis, không cần cài thêm gì
+# CACHING WEATHER
 # ══════════════════════════════════════════════════════════════════════════════
-
 _CACHE_FILE = Path(__file__).resolve().parent.parent.parent / "data" / "weather_cache.json"
 _CACHE_TTL  = settings.WEATHER_CACHE_TTL   # giây, mặc định 1800 (30 phút)
-
 
 def _load_cache() -> dict:
     """Đọc toàn bộ cache từ file JSON. Trả {} nếu file chưa tồn tại."""
@@ -88,7 +83,6 @@ def _save_cache(cache: dict) -> None:
 
 
 def _get_cached(key: str) -> Optional[dict]:
-    """Lấy 1 entry từ cache. Trả None nếu không tồn tại hoặc đã hết TTL."""
     cache = _load_cache()
     entry = cache.get(key)
     if not entry:
@@ -109,24 +103,16 @@ def _set_cached(key: str, data: dict) -> None:
 # ══════════════════════════════════════════════════════════════════════════════
 # HELPER — phát hiện thời tiết từ NLP tags (không tốn API call)
 # ══════════════════════════════════════════════════════════════════════════════
-
 def parse_weather_from_tags(tags: List[str]) -> Optional[str]:
-    """
-    Duyệt NLP tags tìm từ khoá thời tiết.
-    VD: ["chill", "mưa", "cặp đôi"] → "RAIN"
-    Trả None nếu không có tag thời tiết nào.
-    """
     for tag in tags:
         condition = WEATHER_TAG_MAP.get(tag.lower().strip())
         if condition:
             return condition
     return None
 
-
 # ══════════════════════════════════════════════════════════════════════════════
 # OWM API CALLS
 # ══════════════════════════════════════════════════════════════════════════════
-
 async def get_coordinates(location: str) -> tuple[float, float]:
     """Geocoding: tên địa điểm → (lat, lon) qua OWM Geo API."""
     url = "http://api.openweathermap.org/geo/1.0/direct"
@@ -171,29 +157,17 @@ async def get_weather_by_coords(lat: float, lon: float, target_time: str) -> dic
         "rainProbability":  closest.get("pop", 0),
     }
 
-
 # ══════════════════════════════════════════════════════════════════════════════
 # MAIN ENTRY — được gọi bởi chat_router
 # ══════════════════════════════════════════════════════════════════════════════
-
 async def get_weather_data(location: str, target_time: str) -> WeatherResponse:
     """
-    Lấy thông tin thời tiết cho location tại target_time.
-    Thử cache JSON trước, nếu miss mới gọi OWM API.
-
-    Args:
-        location    : tên khu vực, VD "Ho Chi Minh City", "Quận 1"
-        target_time : chuỗi "%Y-%m-%d %H:%M:%S"
-
     Returns:
         WeatherResponse(weatherCondition, temperature, rainProbability)
-
-    Raises:
-        Exception nếu API lỗi (chat_router đã có fallback xử lý).
     """
-    cache_key = f"{location}|{target_time}"
+    cache_key = location.strip().title()
 
-    # ── Cache hit ────────────────────────────────────────────────────────────
+    # ── Cache hit 
     cached = _get_cached(cache_key)
     if cached:
         logger.info(f"[Weather] Cache hit: {cache_key}")
@@ -201,7 +175,20 @@ async def get_weather_data(location: str, target_time: str) -> WeatherResponse:
 
     logger.info(f"[Weather] Cache miss → gọi OWM API: {location}")
 
-    # ── Gọi API ──────────────────────────────────────────────────────────────
+    # ── Gọi API 
+    try:
+        parts = location.split(",")
+        if len(parts) == 2:
+            lat = float(parts[0].strip())
+            lon = float(parts[1].strip())
+            # Kiểm tra range hợp lệ
+            if -90 <= lat <= 90 and -180 <= lon <= 180:
+                raw_data = await get_weather_by_coords(lat, lon, target_time)
+                _set_cached(cache_key, raw_data)
+                return WeatherResponse(**raw_data)
+    except ValueError:
+        pass  # Không phải tọa độ → tiếp tục geocoding bình thường
+
     try:
         t0 = time.time()
         lat, lon = await get_coordinates(location)
@@ -214,7 +201,7 @@ async def get_weather_data(location: str, target_time: str) -> WeatherResponse:
         logger.error(f"[Weather] Lỗi OWM API: {e}")
         raise Exception("Không thể lấy dữ liệu thời tiết từ server lúc này.")
 
-    # ── Lưu cache ────────────────────────────────────────────────────────────
+    # ── Lưu cache 
     _set_cached(cache_key, raw_data)
 
     return WeatherResponse(**raw_data)

@@ -94,8 +94,8 @@ def _row_to_dict(row: sqlite3.Row) -> Dict:
         "tags":       _parse_tags(row["mood_tags"], row["group_tags"]),
 
         # ── Giờ mở/đóng cửa (float hour, vd: 8.5 = 08:30) ─────────────
-        "open_time":  _parse_time(row["open_time"]),
-        "close_time": _parse_time(row["close_time"]),
+        "open_time":  _parse_time(row["open_time"]) or 0.0,
+        "close_time": _parse_time(row["close_time"]) or 24.0,
 
         # ── Ảnh ────────────────────────────────────────────────────────
         "image_url":  str(row["image_url"] or "").strip(),
@@ -185,7 +185,7 @@ def build_database() -> None:
     print(f"[INFO] Ghi vào SQLite: {_DB_FILE}")
     conn = sqlite3.connect(_DB_FILE)
 
-    df.to_sql(_TABLE, conn, if_exists="replace", index=True, index_label="id")
+    df.to_sql(_TABLE, conn, if_exists="replace", index=False)
     conn.commit()
 
     # ── Verify ───────────────────────────────────────────────────────────────

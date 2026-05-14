@@ -10,7 +10,7 @@ import time
 import requests as _req
 
 # ── Import nội bộ ──────────────────────────────────────────────────────────
-from api_client import login, signup, get_suggestions, get_history
+from api_client import login, signup, get_suggestions, get_history, google_login
 from components.map import render_map
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -28,7 +28,7 @@ st.set_page_config(
 # ══════════════════════════════════════════════════════════════════════════════
 _DEFAULTS = {
     "lang":        "vi",
-    "theme":       "dark",
+    "theme":       "light",
     "id_token":    None,       # Firebase ID token
     "email":       None,
     "uid":         None,
@@ -42,6 +42,26 @@ _DEFAULTS = {
 for k, v in _DEFAULTS.items():
     if k not in st.session_state:
         st.session_state[k] = v
+
+#----- Google login hứng token ---------------
+query_params = st.query_params
+
+if "id_token" in query_params and not st.session_state.id_token:
+    token = query_params["id_token"]
+    try:
+        user_data = google_login(token)
+        
+        # Lưu vào trạng thái ứng dụng
+        st.session_state.id_token = user_data["idToken"]
+        st.session_state.email = user_data["email"]
+        st.session_state.uid = user_data["uid"]
+        
+        # Làm sạch URL và tải lại trang
+        st.query_params.clear()
+        st.rerun()
+    except Exception as e:
+        st.error(f"Lỗi xác thực Google: {e}")
+#-----------------------------
 
 # ══════════════════════════════════════════════════════════════════════════════
 # NỘI DUNG ĐA NGÔN NGỮ
@@ -365,6 +385,21 @@ with st.sidebar:
                     st.session_state.auth_error = "Vui lòng nhập email và mật khẩu."
             if st.session_state.auth_error:
                 st.error(st.session_state.auth_error)
+            #------Login with Google-----------
+            st.markdown("<div style='text-align: center; margin: 15px 0;'><b>HOẶC</b></div>", unsafe_allow_html=True)
+            
+            google_auth_url = "http://localhost:8000/auth/google/start"
+            st.markdown(f"""
+                <a href="{google_auth_url}" target="_self" style="text-decoration: none;">
+                    <div style="display: flex; align-items: center; justify-content: center; 
+                                padding: 8px; border: 1px solid #ddd; border-radius: 8px; 
+                                background-color: white; color: #444; font-weight: bold; cursor: pointer;">
+                        <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="18" style="margin-right: 10px;">
+                        Đăng nhập với Google
+                    </div>
+                </a>
+            """, unsafe_allow_html=True)
+            #-----------------------------------
 
         with tab_signup:
             em_s = st.text_input(L["email_lbl"], key="signup_email", placeholder="email@example.com")
@@ -493,7 +528,6 @@ with col_left:
         else:
             st.info("Không có tọa độ địa điểm để hiển thị bản đồ.")
     else:
-        # Bản đồ mặc định — chỉ vị trí người dùng, không có điểm gợi ý
         render_map(user_coords, [])
 
 # ── CỘT PHẢI: Kết quả gợi ý ───────────────────────────────────────────────
@@ -530,15 +564,24 @@ with col_right:
             cond  = weather.get("condition_vi") or weather.get("condition", "")
             temp  = weather.get("temperature", 0)
             rain  = weather.get("rain_probability", 0)
-            src   = "API" if weather.get("source") == "api" else "Người dùng cung cấp"
+            source_map = {
+                "api_name": "API OpenWeatherMap",
+                "api_gps":  "API OpenWeatherMap",
+                "nlp":      "Người dùng cung cấp",
+                "fallback": "Hệ thống"
+            }
+            src_text = source_map.get(weather.get("source", "fallback"), "Không rõ")
+            loc_name = weather.get("location_name", "Không xác định")
 
             st.markdown(f"""
             <div class="weather-box">
                 <span style="font-size:1.8rem">{icon}</span>
                 <div class="weather-item"><b>{cond}</b></div>
-                <div class="weather-item">🌡️ {L['weather_temp']}: <b>{temp:.0f}°C</b></div>
+                <div class="weather-item">🌡️ <b>{temp:.0f}°C</b></div>
                 <div class="weather-item">💧 {L['weather_rain']}: <b>{int(rain*100)}%</b></div>
-                <div class="weather-item" style="opacity:0.5;font-size:0.75rem">Nguồn: {src}</div>
+                <div class="weather-item" style="opacity:0.5;font-size:0.75rem">📍 <b>Khu vực:</b> {loc_name}</div>
+                <div class="weather-item" style="opacity:0.5;font-size:0.75rem">📡 <b>Nguồn:</b> {src_text}</div>
+                </div>
             </div>
             """, unsafe_allow_html=True)
 

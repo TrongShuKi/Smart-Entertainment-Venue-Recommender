@@ -10,6 +10,7 @@ import json
 import os
 import re
 import logging
+import threading
 from pathlib import Path
 from typing import List, Optional
  
@@ -41,7 +42,8 @@ _AI_CACHE_FILE = (
     / "data"
     / "ai_content_cache.json"
 )
- 
+_cache_lock = threading.Lock()
+
 def _load_ai_cache() -> dict:
     try:
         if _AI_CACHE_FILE.exists():
@@ -135,8 +137,11 @@ def generate_text(location_name: str, category: str, user_context: str) -> dict:
         result = validated.model_dump()
 
         # 3. Luu cache
-        cache[location_name] = result
-        _save_ai_cache(cache)
+        with _cache_lock:
+            latest_cache = _load_ai_cache() 
+            latest_cache[location_name] = result
+            _save_ai_cache(latest_cache)
+            
         logger.info(f"[AI Cache] Da luu: '{location_name}' -> {_AI_CACHE_FILE}")
  
         return result
@@ -178,7 +183,7 @@ def extract_nlp_intent(user_chat: str) -> dict:
         2. Đổi ý: Lấy giá trị ĐƯỢC CHỐT CUỐI CÙNG.
         3. Tiền lóng: Tự quy đổi ("nửa củ"=500000, "1 lít"=100000, "vài chục"=50000).
         4. Teencode & không dấu: Tự hiểu (q1, cf, ko ồn, đi vs bồ).
-        5. Từ khóa: Gom TẤT CẢ nhu cầu vào `tags`. Từ phủ định → từ tích cực tương đương.
+        5. Từ khóa: Gom TẤT CẢ nhu cầu và thời tiết (nếu có) vào `tags`. Từ phủ định → từ tích cực tương đương.
         """
 
         response = client.models.generate_content(

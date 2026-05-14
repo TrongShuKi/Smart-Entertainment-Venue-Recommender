@@ -1,10 +1,66 @@
 {
+  "Chùa Bửu Long": {
+    "description": "Chùa Bửu Long thu hút du khách bởi kiến trúc Thái Lan độc đáo và không gian thanh tịnh, mang đến một chốn dừng chân lý tưởng để đi dạo và tìm kiếm sự riêng tư, đặc biệt trong tiết trời nhiều mây. Nơi đây là điểm đến phù hợp cho những ai muốn thoát khỏi sự ồn ào và chiêm nghiệm một mình.",
+    "fact": "Chùa Bửu Long từng được tạp chí kiến trúc National Geographic của Mỹ bình chọn là một trong 10 ngôi chùa có kiến trúc đẹp nhất thế giới."
+  },
+  "Vinhomes Central Park": {
+    "description": "Vinhomes Central Park là điểm đến lý tưởng để tìm kiếm sự bình yên và riêng tư, nơi du khách có thể thong thả dạo bước dưới tán cây xanh mát, tạm quên đi sự ồn ào của đô thị. Dù thời tiết có chút oi ả, không gian rộng lớn cùng nhiều góc yên tĩnh vẫn mang lại trải nghiệm thư thái cho những ai muốn tận hưởng khoảnh khắc một mình.",
+    "fact": "Công viên Vinhomes Central Park được thiết kế lấy cảm hứng từ công viên Central Park nổi tiếng tại New York, mang đến một không gian xanh đẳng cấp giữa lòng thành phố."
+  },
+  "Van Phuc Water Show": {
+    "description": "Van Phuc Water Show là một sân khấu nhạc nước hiện đại, mang đến những màn trình diễn ánh sáng, âm thanh và hiệu ứng nước đầy mê hoặc. Đây là điểm đến lý tưởng để thưởng thức nghệ thuật giải trí đẳng cấp trong một không gian mở.",
+    "fact": "Van Phuc Water Show tự hào là sân khấu nhạc nước lớn nhất Việt Nam, với quy mô đầu tư và công nghệ trình diễn ấn tượng."
+  },
   "Bưu điện Thành phố": {
-    "description": "Bưu điện Thành phố, một công trình kiến trúc Pháp cổ kính, là điểm dừng chân lý tưởng để du khách một mình khám phá vẻ đẹp lịch sử và tránh đi những cơn mưa bất chợt của Sài Gòn.",
-    "fact": "Bên trong Bưu điện Thành phố còn lưu giữ hai bản đồ lịch sử quý giá: một bản đồ tuyến điện tín quốc tế và một bản đồ Sài Gòn cùng các vùng lân cận năm 1892."
+    "description": "Bưu điện Thành phố, một công trình kiến trúc Pháp cổ kính, mang đến không gian rộng rãi và thoáng đãng, lý tưởng cho những ai tìm kiếm một góc yên tĩnh để học tập hoặc làm việc trong tiết trời oi ả. Nơi đây không chỉ là điểm tham quan lịch sử mà còn là chốn dừng chân bình yên giữa lòng đô thị nhộn nhịp.",
+    "fact": "Bưu điện Thành phố được thiết kế bởi kiến trúc sư lừng danh Gustave Eiffel, người đứng sau biểu tượng Tháp Eiffel ở Paris."
+  },
+  "Đường sách Nguyễn Văn Bình": {
+    "description": "Đường sách Nguyễn Văn Bình là một không gian văn hóa độc đáo giữa lòng Sài Gòn, nơi du khách có thể tìm thấy sự yên bình để học tập hay đọc sách. Dù thời tiết bên ngoài có oi ả, những bóng cây và không khí tri thức tại đây vẫn mang lại cảm giác thư thái.",
+    "fact": "Đây là tuyến đường sách đầu tiên và duy nhất tại Thành phố Hồ Chí Minh, được khai trương vào năm 2016."
+  },
+  "Bảo tàng Biệt động": {
+    "description": "Bảo tàng Biệt động là nơi lưu giữ những câu chuyện thầm lặng nhưng đầy oanh liệt về lực lượng biệt động Sài Gòn trong cuộc kháng chiến. Với không gian yên tĩnh và nhiều hiện vật giá trị, đây là điểm đến lý tưởng cho những ai muốn tìm hiểu lịch sử hoặc cần một nơi riêng tư để học tập giữa lòng thành phố.",
+    "fact": "Bảo tàng Biệt động Sài Gòn thực chất là một căn hầm bí mật từng là nơi ẩn náu và chỉ đạo của lực lượng biệt động ngay trong lòng địch."
+  },
+  "Bảo tàng Áo Dài": {
+    "description": "Bảo tàng Áo Dài mang đến cái nhìn sâu sắc về lịch sử và sự phát triển của trang phục truyền thống Việt Nam, từ những thiết kế cổ xưa đến hiện đại. Với không gian tĩnh lặng giữa khu vực Thủ Đức, nơi đây có thể là một địa điểm lý tưởng cho những ai tìm kiếm sự riêng tư để học tập hoặc nghiên cứu.",
+    "fact": "Bảo tàng Áo Dài là bảo tàng tư nhân đầu tiên ở Việt Nam dành riêng cho áo dài, được thành lập bởi nhà thiết kế Sĩ Hoàng."
+  },
+  "Suối Tiên": {
+    "description": "Công viên Văn hóa Suối Tiên là một khu vui chơi giải trí phức hợp nổi tiếng tại Thành phố Hồ Chí Minh, nơi du khách có thể khám phá sự kết hợp độc đáo giữa các trò chơi hiện đại và kiến trúc mang đậm nét văn hóa, lịch sử Việt Nam. Vào một ngày nhiều mây với nhiệt độ 34°C, nơi đây vẫn là điểm đến sôi động với nhiều hoạt động giải trí đa dạng.",
+    "fact": "Suối Tiên là công viên giải trí đầu tiên ở Việt Nam áp dụng mô hình kết hợp văn hóa, lịch sử dân tộc với các loại hình giải trí hiện đại."
+  },
+  "Saigon Centre (Takashimaya)": {
+    "description": "Saigon Centre mang đến không gian hiện đại và thoải mái, lý tưởng để tránh những cơn mưa bất chợt và tận hưởng buổi chiều thư giãn bên người thương tại trung tâm Quận 1. Với ngân sách hợp lý, du khách có thể khám phá nhiều lựa chọn ẩm thực hoặc mua sắm nhẹ nhàng trong một không gian mát mẻ và yên bình.",
+    "fact": "Saigon Centre là địa điểm đầu tiên tại Việt Nam có sự hiện diện của thương hiệu bách hóa cao cấp Takashimaya đến từ Nhật Bản."
   },
   "Bến Bạch Đằng": {
-    "description": "Vào một ngày nắng đẹp tại Bến Bạch Đằng, du khách có thể thong thả dạo bước một mình, tận hưởng không gian thoáng đãng bên sông Sài Gòn và ngắm nhìn nhịp sống sôi động của thành phố. Nơi đây mang đến cảm giác thư thái và hứng khởi giữa lòng đô thị.",
-    "fact": "Tên gọi Bến Bạch Đằng gợi nhớ về ba trận thủy chiến lịch sử oai hùng của dân tộc Việt Nam, trong đó nổi bật là chiến thắng của Ngô Quyền trước quân Nam Hán."
+    "description": "Giữa tiết trời Đà Lạt se lạnh 18°C cùng những hạt mưa bay lất phất, Bến Bạch Đằng mang đến một không gian yên tĩnh lý tưởng để du khách thư giãn và chiêm nghiệm, tách biệt khỏi nhịp sống hối hả.",
+    "fact": "Đà Lạt được mệnh danh là 'Thành phố ngàn hoa' với khí hậu ôn hòa và hệ thực vật phong phú, tạo nên vẻ đẹp đặc trưng hiếm nơi nào có được tại Việt Nam."
+  },
+  "Thiso Mall Sala": {
+    "description": "Giữa tiết trời se lạnh và mưa phùn, Thiso Mall Sala là điểm đến lý tưởng để trú ẩn, mang đến không gian hiện đại và rộng rãi. Du khách có thể tìm một góc yên tĩnh tại các quán cà phê, thưởng thức đồ uống ấm nóng với ngân sách hợp lý để thư giãn.",
+    "fact": "Thiso Mall Sala là trung tâm thương mại thuộc Tập đoàn THACO, nổi bật với kiến trúc hiện đại và là một trong những điểm nhấn của khu đô thị Sala Thủ Thiêm."
+  },
+  "Saigon Opera House": {
+    "description": "Nhà hát Lớn Sài Gòn, một công trình kiến trúc Pháp cổ kính và tráng lệ, là điểm đến văn hóa độc đáo cho du khách khám phá. Dù thời tiết 30°C và nhiều mây, vẻ đẹp của nhà hát vẫn thu hút ánh nhìn, mời gọi bước vào thế giới nghệ thuật.",
+    "fact": "Nhà hát Lớn Sài Gòn từng là trụ sở Quốc hội của Việt Nam Cộng hòa từ năm 1956 đến 1975."
+  },
+  "City Park Global City": {
+    "description": "City Park Global City mang đến một không gian xanh mát và kiến trúc độc đáo, lý tưởng cho những cặp đôi tìm kiếm khoảnh khắc lãng mạn giữa lòng đô thị. Dưới tiết trời nhiều mây, đây là điểm đến hoàn hảo để dạo bước và tận hưởng vẻ đẹp cảnh quan.",
+    "fact": "City Park Global City được thiết kế bởi Foster + Partners, một trong những công ty kiến trúc hàng đầu thế giới."
+  },
+  "Landmark 81": {
+    "description": "Tọa lạc tại đỉnh cao của Landmark 81, đài quan sát Skyview mang đến một không gian lý tưởng cho những khoảnh khắc lãng mạn, nơi du khách có thể chiêm ngưỡng toàn cảnh thành phố rực rỡ từ trên cao. Dù tiết trời nhiều mây, vẻ đẹp của Sài Gòn vẫn hiện lên đầy ấn tượng, tạo nên một trải nghiệm khó quên với tầm nhìn tuyệt đẹp.",
+    "fact": "Với chiều cao 461.2 mét, Landmark 81 là tòa nhà cao nhất Việt Nam và từng nằm trong top 20 tòa nhà cao nhất thế giới tại thời điểm khánh thành."
+  },
+  "Emart Sala": {
+    "description": "Emart Sala là một trung tâm mua sắm hiện đại, lý tưởng cho những ai tìm kiếm không gian trong nhà mát mẻ để trú mưa và thư giãn nhẹ nhàng. Tại đây, du khách có thể ghé qua khu ẩm thực hoặc siêu thị để tìm kiếm các món ăn vặt phù hợp với ngân sách hạn chế.",
+    "fact": "Emart Sala là chi nhánh thứ hai của chuỗi siêu thị Emart đến từ Hàn Quốc tại Việt Nam, mang đến trải nghiệm mua sắm chuẩn Hàn Quốc ngay tại trung tâm thành phố."
+  },
+  "Acoustic Bar Ngô Thời Nhiệm": {
+    "description": "Acoustic Bar Ngô Thời Nhiệm mang đến không gian âm nhạc sống động và lãng mạn, lý tưởng cho những buổi tối hẹn hò hoặc thư giãn cùng bạn bè. Với mức giá phải chăng cùng không gian ấm cúng, đây là điểm đến tuyệt vời để thưởng thức giai điệu du dương trong một buổi tối Sài Gòn dịu mát.",
+    "fact": "Acoustic Bar Ngô Thời Nhiệm là một trong những quán bar tiên phong tại Sài Gòn chuyên về nhạc sống acoustic, thu hút đông đảo khán giả yêu nhạc từ nhiều năm nay."
   }
 }

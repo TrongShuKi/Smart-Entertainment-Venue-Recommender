@@ -1,0 +1,65 @@
+    /* ═══════════════════════════════════════════════
+       DESIGN TOKENS & RESET
+    ═══════════════════════════════════════════════ */
+    :root {
+      --bg-deep:      #0a0c0f;
+      --bg-card:      #111418;
+      --bg-glass:     rgba(10, 12, 15, 0.55);
+      --border-glass: rgba(255, 255, 255, 0.08);
+      --accent:       #c8a96e;        /* warm gold */
+      --accent-dim:   rgba(200, 169, 110, 0.18);
+      --text-primary: #f0ede8;
+      --text-muted:   rgba(240, 237, 232, 0.45);
+      --text-dim:     rgba(240, 237, 232, 0.22);
+      --white:        #ffffff;
+      --danger:       #e05252;
+      --success:      #52b788;
+
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-ui:      'DM Sans', sans-serif;
+      --font-mono:    'Space Grotesk', monospace;
+
+      --nav-h:        64px;
+      --radius-card:  20px;
+      --radius-pill:  999px;
+      --shadow-card:  0 8px 40px rgba(0,0,0,0.55);
+      --shadow-glow:  0 0 30px rgba(200, 169, 110, 0.25);
+
+      --transition:   0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      --transition-fast: 0.18s ease;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: var(--font-ui);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; border: none; background: none; font-family: inherit; color: inherit; }
+    input, textarea { font-family: inherit; }
+
+    /* ─── Scrollbar ─── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg-deep); }
+    ::-webkit-scrollbar-thumb { background: var(--accent-dim); border-radius: 99px; }
+
+    /* ─── Utility ─── */
+    .hidden  { display: none !important; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+
+    /* ═══════════════════════════════════════════════
+       SECTION VISIBILITY (Hide & Reveal strategy)
+    ═══════════════════════════════════════════════ */
+    #section-discovery,
+    #section-decision { display: none; }
+
+    #section-discovery.revealed,
+    #section-decision.revealed { display: block; }
+

@@ -1,0 +1,18 @@
+{
+  "10.7769,106.7009": {
+    "ts": 1778900892.7456548,
+    "data": {
+      "weatherCondition": "RAIN",
+      "temperature": 32.16,
+      "rainProbability": 0.36
+    }
+  },
+  "Ho Chi Minh City": {
+    "ts": 1778898978.2591,
+    "data": {
+      "weatherCondition": "RAIN",
+      "temperature": 32.11,
+      "rainProbability": 0.36
+    }
+  }
+}

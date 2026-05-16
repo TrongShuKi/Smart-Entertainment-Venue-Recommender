@@ -214,16 +214,31 @@ async def get_suggestions(
             fact        = gen.get("fact", ""),
         ))
 
+    weather_info_obj = WeatherInfo(
+        condition        = weather_condition,
+        condition_vi     = WEATHER_CONDITION_VI.get(weather_condition, ""),
+        temperature      = temperature,
+        rain_probability = rain_probability,
+        source           = weather_source,
+        location_name    = weather_location,
+    )
+    context_summary = _build_context_summary(nlp)
+
     # ── 8. Lưu lịch sử 
-    if user and top_scored:
+    if user and top_places:
+        places_dict = [p.model_dump() for p in top_places]
+        weather_dict = weather_info_obj.model_dump()
         asyncio.create_task(
-            asyncio.to_thread(save_history, user["uid"], payload.query, top_scored)
+            asyncio.to_thread(
+                save_history, user["uid"], payload.query, places_dict, weather_dict, context_summary
+            )
         )
 
     return SuggestionResponse(
         status               = "success",
         message              = f"Tìm thấy {len(top_places)} địa điểm phù hợp!",
         top_places           = top_places,
+<<<<<<< Updated upstream
         weather_info         = WeatherInfo(
             condition        = weather_condition,
             condition_vi     = WEATHER_CONDITION_VI.get(weather_condition, ""),
@@ -232,6 +247,10 @@ async def get_suggestions(
             source           = weather_source,
         ),
         user_context_summary = _build_context_summary(nlp),
+=======
+        weather_info         = weather_info_obj,
+        user_context_summary = context_summary,
+>>>>>>> Stashed changes
     )
 
 @router.get("/history")

@@ -20,22 +20,7 @@
 
         const data = await API.suggest(query, loc);
 
-        APP_STATE.results       = data;
-        APP_STATE.places        = data.top_places || [];
-        APP_STATE.weather       = data.weather_info || null;
-        APP_STATE.contextSummary = data.user_context_summary || '';
-        APP_STATE.activePlaceIndex = 0;
-
-        if (APP_STATE.places.length === 0) {
-          showToast('Không tìm thấy địa điểm phù hợp. Thử mô tả khác nhé!');
-          return;
-        }
-
-        // Update weather badge
-        this._updateWeatherBadge(data.weather_info);
-
-        // Reveal sections & scroll
-        this._revealResults();
+        this.handleSuccess(data);
 
       } catch (err) {
         console.error('[Search]', err);
@@ -44,6 +29,24 @@
         btn.classList.remove('loading');
         input.disabled = false;
       }
+    },
+
+    handleSuccess(data) {
+      // Cập nhật State
+      APP_STATE.results       = data;
+      APP_STATE.places        = data.top_places || [];
+      APP_STATE.weather       = data.weather_info || null;
+      APP_STATE.contextSummary = data.user_context_summary || '';
+      APP_STATE.activePlaceIndex = 0;
+
+      if (APP_STATE.places.length === 0) {
+        showToast('Không tìm thấy địa điểm phù hợp. Thử mô tả khác nhé!');
+        return;
+      }
+
+      // Update weather badge & UI
+      this._updateWeatherBadge(data.weather_info);
+      this._revealResults();
     },
 
     async _getLocation() {
@@ -85,5 +88,12 @@
       setTimeout(() => smoothScrollTo(disc), 100);
     },
   };
+
+  // ── Lắng nghe sự kiện khôi phục từ lịch sử (history.js) ──
+  document.addEventListener('restoreHistory', (e) => {
+    if (e.detail && typeof Search !== 'undefined') {
+      Search.handleSuccess(e.detail);
+    }
+  });
 
   

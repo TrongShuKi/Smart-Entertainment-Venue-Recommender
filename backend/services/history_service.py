@@ -20,7 +20,7 @@ _COLLECTION_ROOT = "users"
 _COLLECTION_HISTORY = "history"
 
 
-def save_history(uid: str, query: str, top_scored: List[Dict]) -> None:
+def save_history(uid: str, query: str, full_response: dict) -> None:
     """
     Lưu 1 lượt gợi ý vào Firestore.
     Gọi bằng asyncio.to_thread() từ router để không block event loop.
@@ -30,7 +30,9 @@ def save_history(uid: str, query: str, top_scored: List[Dict]) -> None:
         users/{uid}/history/{auto_id}
             query     : str
             timestamp : str  (ISO 8601 UTC)
-            results   : list[{id, name, score}]
+            results              : list[dict] (toàn bộ top_places)
+            weather_info         : dict
+            user_context_summary : str
     """
     try:
         ref = (
@@ -42,14 +44,9 @@ def save_history(uid: str, query: str, top_scored: List[Dict]) -> None:
         ref.add({
             "query":     query,
             "timestamp": datetime.utcnow().isoformat(),
-            "results": [
-                {
-                    "id":    r.get("location_id", ""),
-                    "name":  r.get("name", ""),
-                    "score": r.get("total_score", 0),
-                }
-                for r in top_scored
-            ],
+            "results": full_response.get("top_places", []),
+            "weather_info": full_response.get("weather_info"),
+            "user_context_summary": full_response.get("user_context_summary")
         })
         logger.info(f"[History] Đã lưu lịch sử cho UID: {uid}")
     except Exception as exc:

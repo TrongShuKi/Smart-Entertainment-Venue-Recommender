@@ -240,13 +240,8 @@ async def get_suggestions(
             fact        = gen.get("fact", ""),
         ))
 
-    # ── 8. Lưu lịch sử 
-    if user and top_scored:
-        asyncio.create_task(
-            asyncio.to_thread(save_history, user["uid"], payload.query, top_scored)
-        )
-
-    return SuggestionResponse(
+    # ── 8. Tạo Response Object
+    response_obj = SuggestionResponse(
         status               = "success",
         message              = f"Tìm thấy {len(top_places)} địa điểm phù hợp!",
         top_places           = top_places,
@@ -260,6 +255,14 @@ async def get_suggestions(
         ),
         user_context_summary = _build_context_summary(nlp),
     )
+
+    # ── 9. Lưu lịch sử toàn bộ payload
+    if user and top_scored:
+        asyncio.create_task(
+            asyncio.to_thread(save_history, user["uid"], payload.query, response_obj.model_dump())
+        )
+
+    return response_obj
 
 @router.get("/history")
 async def get_history(

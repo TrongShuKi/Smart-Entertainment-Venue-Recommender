@@ -26,6 +26,10 @@
       const sub  = document.getElementById('history-modal-sub');
       if (!list) return;
 
+      // Fix overflow: Giới hạn chiều cao danh sách, cho phép cuộn, giữ tiêu đề cố định
+      list.style.maxHeight = '55vh';
+      list.style.overflowY = 'auto';
+
       // Loading state
       list.innerHTML = '<div class="hist-loading"><div class="hist-spinner"></div>Đang tải lịch sử...</div>';
 
@@ -37,6 +41,10 @@
       try {
         const data = await API.history(10);
         const items = data.history || [];
+        
+        // Lưu lại data vào bộ nhớ để khi click thì lấy ra dùng
+        this._historyItems = items;
+        
         if (sub) sub.textContent = items.length > 0
           ? `${items.length} lượt tìm kiếm gần đây của ${APP_STATE.user.email}`
           : 'Chưa có lịch sử tìm kiếm';
@@ -69,15 +77,27 @@
         }).join('');
 
         // Click để tìm lại
-        list.querySelectorAll('.hist-item').forEach(el => {
+        list.querySelectorAll('.hist-item').forEach((el, index) => {
           el.addEventListener('click', () => {
-            const q = el.dataset.query;
-            if (!q) return;
+            const selectedItem = this._historyItems[index];
+            if (!selectedItem || !selectedItem.results || selectedItem.results.length === 0) return;
+            
             this.close();
             const input = document.getElementById('main-search-input');
-            if (input) input.value = q;
+            if (input) input.value = selectedItem.query || '';
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            setTimeout(() => Search.run(q), 400);
+            
+            // Tái tạo lại cấu trúc Response giả lập từ lịch sử
+            const mockResponse = {
+                status: 'success',
+                message: 'Khôi phục từ lịch sử',
+                top_places: selectedItem.results,
+                weather_info: selectedItem.weather_info || null,
+                user_context_summary: selectedItem.user_context_summary || ''
+            };
+            
+            // Phát sự kiện (hoặc gọi hàm) để render UI KHÔNG qua API
+            document.dispatchEvent(new CustomEvent('restoreHistory', { detail: mockResponse }));
           });
         });
 
@@ -99,4 +119,3 @@
       } catch(e) { return ''; }
     },
   };
-

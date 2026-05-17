@@ -1,0 +1,18 @@
+{
+  "10.7769,106.7009": {
+    "ts": 1779037808.5811253,
+    "data": {
+      "weatherCondition": "CLOUDS",
+      "temperature": 28.66,
+      "rainProbability": 0.2
+    }
+  },
+  "Ho Chi Minh City": {
+    "ts": 1779035413.0868628,
+    "data": {
+      "weatherCondition": "CLOUDS",
+      "temperature": 28.81,
+      "rainProbability": 0.2
+    }
+  }
+}

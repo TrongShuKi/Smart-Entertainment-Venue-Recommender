@@ -43,46 +43,32 @@
           </button>
         </div>`).join('');
 
-      // Events
-      body.querySelectorAll('.fav-item').forEach(el => {
-        el.addEventListener('click', (e) => {
-          if (e.target.closest('.fav-remove')) {
-            e.stopPropagation();
-            Favorites.remove(el.dataset.id);
-          } else {
-            const place = APP_STATE.favorites.find(f => f.id === el.dataset.id);
-            this.close();
-            if (place) {
-              // Reveal section-decision nếu chưa
-              const decSec = document.getElementById('section-decision');
-              if (decSec) decSec.classList.add('revealed');
-              smoothScrollTo(decSec || document.getElementById('section-decision'));
-              // Zoom map sau khi scroll xong
-              setTimeout(() => {
-                if (APP_STATE.mapInstance && place.latitude && place.longitude) {
-                  APP_STATE.mapInstance.setView([place.latitude, place.longitude], 16, { animate: true });
-                  // Bounce marker tại vị trí đó
-                  APP_STATE.mapInstance.eachLayer(layer => {
-                    if (layer.getLatLng) {
-                      const ll = layer.getLatLng();
-                      if (Math.abs(ll.lat - place.latitude) < 0.001 && Math.abs(ll.lng - place.longitude) < 0.001) {
-                        layer.openTooltip();
+          // Events
+          body.querySelectorAll('.fav-item').forEach(el => {
+              el.addEventListener('click', (e) => {
+                  if (e.target.closest('.fav-remove')) {
+                      e.stopPropagation();
+                      Favorites.remove(el.dataset.id);
+                  } else {
+                      const rawId = String(el.dataset.id);
+                      const place = APP_STATE.favorites.find(f => String(f.id) === rawId);
+
+                      this.close();
+
+                      if (place && typeof DetailModal !== 'undefined') {
+                          DetailModal.open(place);
+                      } else {
+                          console.error("Không tìm thấy địa điểm hoặc DetailModal chưa load.");
                       }
-                    }
-                  });
-                }
-              }, 600);
-            }
+                  }
+              });
+          });
+
+          // Update badge
+          const badge = $('#fav-badge');
+          if (badge) {
+              badge.textContent = APP_STATE.favorites.length;
+              badge.classList.toggle('visible', APP_STATE.favorites.length > 0);
           }
-        });
-      });
-
-      // Update badge
-      const badge = $('#fav-badge');
-      if (badge) {
-        badge.textContent = APP_STATE.favorites.length;
-        badge.classList.toggle('visible', APP_STATE.favorites.length > 0);
-      }
-    },
+      },
   };
-

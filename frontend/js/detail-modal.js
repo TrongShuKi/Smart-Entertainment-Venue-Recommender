@@ -1,41 +1,53 @@
   /* ═══════════════════════════════════════════════════════════
    DETAIL MODAL — Phần 3
   ═══════════════════════════════════════════════════════════ */
-  var DetailModal = {
+var DetailModal = {
     _miniMap: null,
     _currentPlace: null,
     _MEDALS: ['🥇', '🥈', '🥉'],
 
-    open(index) {
-      const place = APP_STATE.places[index];
-      if (!place) return;
-      this._currentPlace = place;
+    open(data) {
+        let place;
+        let index = -1;
 
-      this._populate(place, index);
-      document.getElementById('detail-modal').classList.add('open');
-      document.body.style.overflow = 'hidden';
+        if (typeof data === 'object' && data !== null) {
+            place = data;
+        } else {
+            index = data;
+            place = APP_STATE.places[index];
+        }
 
-      // Init mini-map after modal visible
-      setTimeout(() => this._initMiniMap(place), 120);
+        if (!place) {
+            console.warn("DetailModal.open(): Dữ liệu place rỗng.");
+            return;
+        }
 
-      // Keyboard close
-      document.addEventListener('keydown', this._onKey);
+        this._currentPlace = place;
+        this._populate(place, index);
+
+        document.getElementById('detail-modal').classList.add('open');
+        document.body.style.overflow = 'hidden';
+
+        setTimeout(() => this._initMiniMap(place), 120);
+
+        this._boundOnKey = this._onKey.bind(this);
+        document.addEventListener('keydown', this._boundOnKey);
     },
 
     close() {
-      document.getElementById('detail-modal').classList.remove('open');
-      document.body.style.overflow = '';
-      document.removeEventListener('keydown', this._onKey);
+        document.getElementById('detail-modal').classList.remove('open');
+        document.body.style.overflow = '';
+        if (this._boundOnKey) {
+            document.removeEventListener('keydown', this._boundOnKey);
+        }
 
-      // Destroy mini-map so it re-inits cleanly next time
-      if (this._miniMap) {
-        this._miniMap.remove();
-        this._miniMap = null;
-      }
+        if (this._miniMap) {
+            this._miniMap.remove();
+            this._miniMap = null;
+        }
     },
 
-    _onKey(e) { if (e.key === 'Escape') DetailModal.close(); },
-
+    _onKey(e) { if (e.key === 'Escape') this.close(); },
     _populate(place, index) {
       const set = (id, val) => {
         const el = document.getElementById(id);

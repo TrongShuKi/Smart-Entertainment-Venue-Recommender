@@ -61,7 +61,11 @@
         if (emailEl) emailEl.textContent = APP_STATE.user.email || '';
         if (nameEl)  nameEl.textContent  = (APP_STATE.user.email || '').split('@')[0];
       }
-
+        const badge = document.getElementById('fav-badge');
+      if (badge && !loggedIn) {
+          badge.classList.remove('visible');
+      }
+      
       // Update side panel
       SidePanel.render();
     },

@@ -12,9 +12,23 @@
     },
 
     logout() {
-      APP_STATE.user = null;
-      APP_STATE.isGuest = true;
-      APP_STATE.favorites = [];   // xóa favorites khỏi state khi logout
+      APP_STATE.user        = null;
+      APP_STATE.isGuest     = true;
+      APP_STATE.favorites   = [];
+      APP_STATE.places      = [];
+      APP_STATE.results     = null;
+      APP_STATE.contextSummary  = '';
+      APP_STATE.resultsRevealed = false;
+
+      // Ẩn Tầng 2 & 3, reset nội dung
+      const disc = document.getElementById('section-discovery');
+      const dec  = document.getElementById('section-decision');
+      if (disc) { disc.classList.remove('revealed'); disc.innerHTML = ''; }
+      if (dec)  dec.classList.remove('revealed');
+
+      // Scroll về đầu trang
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
       this._updateUI();
       localStorage.removeItem('st_session');
       showToast('Đã đăng xuất', 'success', 2000);

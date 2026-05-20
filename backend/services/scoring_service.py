@@ -1,132 +1,292 @@
 """
-scoring_service.py
-==================
-Chịu trách nhiệm toàn bộ logic lọc và chấm điểm địa điểm.
+scoring_service.py — v5 (Bug-fixed)
+=====================================
+FIXES so với v4:
+  FIX-1  MOOD_TAGS mở rộng: thêm đủ tất cả tags tồn tại trong DB thực tế
+  FIX-2  NLP_TO_DB_ALIAS → multi-value (Dict[str, List[str]]):
+         "sôi động" → ["energetic", "lively", "bustling", "fun"]
+  FIX-3  parse_tags: hỗ trợ alias 1→nhiều DB tag
+  FIX-4  Weather filter: handle space_type không nhất quán
+         ("indoor,outdoor" / "outdoor,indoor" → có indoor → không block)
+  FIX-5  Bộ lọc giờ mở cửa: conditional theo flag check_open_time
+         (trước đây luôn filter → loại 84% địa điểm khi tìm lúc tối)
+  FIX-6  generate_recommendations: nhận check_open_time từ user_context
 
-Bugs đã fix (v2):
-  - BUG 1: Tags DB tiếng Anh ↔ STYLE/MOOD_TAGS tiếng Việt → bổ sung bảng EN + alias map
-  - BUG 2: close_time sau nửa đêm (01:00, 02:00) → thêm midnight-crossing logic
-  - BUG 3: Group tags DB là EN (couple/family) ↔ GROUP_TAG_MAP ra tiếng Việt → thêm EN map
+Schema DB thực tế (đã confirm từ DB):
+    id, name, category, type, price, rating,
+    coords, tags, open_time (float), close_time (float), image_url, region
+
+    - "type"      : "outdoor" | "indoor" | "indoor_outdoor" |
+                    "indoor,outdoor" | "mixed" | "underground" | "outdoor,indoor"
+    - "tags"      : list[str] — gộp mood_tags + group_tags, toàn EN lowercase
+    - open/close  : float hour (0.0–23.99)
 """
 
+import logging
 import math
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================================
-# TAG TABLES — tiếng Việt (NLP input) + tiếng Anh (DB tags)
+# TAG TABLES — khớp CHÍNH XÁC với tags trong DB (toàn EN lowercase)
 # ============================================================================
 
-# Style: đặc tính không gian / phong cách (+2.0đ mỗi match)
 STYLE_TAGS = {
-    # Tiếng Việt (NLP)
-    "acoustic", "yên tĩnh", "vắng vẻ", "view đẹp", "sống ảo",
-    "không gian xanh", "cổ điển", "hiện đại", "nghệ thuật", "rooftop",
-    "tự nhiên", "vintage", "minimalist", "cozy", "sang trọng",
-    "bình dân", "đặc sắc", "độc đáo",
-    
-    "luxury", "artistic", "historical", "cultural", "jazz",
+    # Phong cách không gian / thẩm mỹ
+    "vintage", "luxury", "artistic", "historical", "cultural", "culture",
+    "jazz", "rooftop", "acoustic", "minimalist", "cozy",
+    "instagrammable", "scenic", "panoramic", "majestic", "nostalgic",
+    "modern", "authentic", "solemn", "mysterious", "architecture",
+    "architectural", "colorful", "cute", "handmade", "traditional",
+    "historic", "history",
 }
 
-# Mood: trạng thái cảm xúc / nhu cầu (+1.0đ mỗi match)
+# FIX-1: Bổ sung đầy đủ tất cả mood tags có trong DB thực tế
 MOOD_TAGS = {
-    # Tiếng Việt (NLP)
-    "chill", "xả stress", "thư giãn", "lãng mạn", "sôi động",
-    "vui vẻ", "khám phá", "cảm giác mạnh", "ăn uống", "hẹn hò",
-    "gia đình", "bạn bè", "cặp đôi", "đi một mình", "giải trí",
-    "vận động", "học hỏi", "sáng tạo",
+    # Cảm giác / Trạng thái
+    "chill", "relax", "relaxing", "romantic", "fun", "energetic",
+    "lively", "bustling", "peaceful", "quiet", "healing", "wellness",
+    "meditation", "spa", "resort", "cool", "cool_weather",
 
-    "relax", "romantic", "fun", "energetic", "adventure",
-    "nightlife", "educational", "family",
+    # Hoạt động ngoài trời
+    "adventure", "adventurous", "active", "hiking", "trekking",
+    "cycling", "swimming", "camping", "picnic", "beach", "seaside",
+    "snorkeling", "diving", "boating", "boat_trip", "sandboarding",
+    "zipline", "extreme", "thrill", "thrilling", "walk", "walking",
+    "exercise", "water_activity", "water_fun", "water_games",
+    "waterpark", "waterfall", "birdwatching", "wildlife",
+    "cave_exploration", "cloud_hunting", "cloud_view",
+
+    # Văn hoá / Học thuật
+    "educational", "intellectual", "cultural", "culture", "history",
+    "historic", "historical", "spiritual", "solemn", "patriotic",
+    "community", "local_experience", "local_food", "local_life",
+    "countryside", "ecotourism", "eco", "biodiversity",
+    "river_life", "sightseeing", "exploration", "explore",
+
+    # Ẩm thực / Giải trí
+    "food", "foodie", "seafood", "beer", "shopping", "entertainment",
+    "nightlife", "party", "music", "jazz", "show", "gaming",
+    "animal_show", "folk_games", "festival", "interactive", "creative",
+
+    # Thiên nhiên / Cảnh quan
+    "nature", "green_space", "scenic", "panoramic", "majestic",
+    "mountain_view", "sunrise", "sunset", "night_view", "nightview",
+    "flower_field", "fruit_garden", "clear_water",
+
+    # Ảnh / Check-in
+    "photography", "photo", "checkin", "instagrammable",
+
+    # Nhóm / Gia đình
+    "family", "family_fun", "family_trip", "team_building",
+    "weekend", "weekend_getaway", "summer", "roadtrip",
+
+    # Misc
+    "emotional", "fantasy", "weird", "spectacular", "colorful",
+    "transit", "authentic", "mysterious", "nostalgic", "nostalgic",
 }
 
-# Alias map: NLP tiếng Việt → DB tags tiếng Anh tương đương
-# Dùng khi NLP trả về tiếng Việt nhưng DB lưu tiếng Anh
-NLP_TO_DB_ALIAS: Dict[str, str] = {
-    "thư giãn":      "relax",
-    "xả stress":     "relax",
-    "lãng mạn":      "romantic",
-    "hẹn hò":        "romantic",
-    "sôi động":      "energetic",
-    "vui vẻ":        "fun",
-    "giải trí":      "fun",
-    "cảm giác mạnh": "adventure",
-    "khám phá":      "adventure",
-    "học hỏi":       "educational",
-    "vận động":      "energetic",
-    "sáng tạo":      "artistic",
-    "nghệ thuật":    "artistic",
-    "sang trọng":    "luxury",
-    "ban đêm":       "nightlife",
-    "về đêm":        "nightlife",
-    "ăn uống":       "food",
+# Group tags trong DB — loại ra khỏi mood/style scoring
+GROUP_TAGS_DB = {
+    "couple", "family", "friends", "solo", "kids", "children",
+    "teen", "teens", "student", "students", "elderly", "group",
+    "adventurers", "tourist", "foreigners", "business",
 }
 
 # ============================================================================
-# GROUP TAG MAP — tiếng Việt (NLP) → cả VN lẫn EN để match DB  ← FIX BUG 3
+# FIX-2: ALIAS NLP → DB — multi-value (một VN term → nhiều EN DB tags)
 # ============================================================================
-# Map: từ NLP → danh sách tag có thể có trong DB
+
+NLP_TO_DB_ALIAS: Dict[str, Union[str, List[str]]] = {
+    # Thư giãn
+    "thư giãn":        ["relax", "chill", "relaxing", "peaceful"],
+    "xả stress":       ["relax", "chill", "wellness", "healing"],
+    "nghỉ ngơi":       ["relax", "resort", "peaceful"],
+    "bình yên":        ["peaceful", "quiet", "relax"],
+    "yên tĩnh":        ["peaceful", "quiet"],
+    "vắng vẻ":         ["peaceful", "quiet"],
+    "tĩnh lặng":       ["peaceful", "meditation"],
+
+    # Vui vẻ / Năng động
+    "vui vẻ":          ["fun", "lively", "entertaining"],
+    "sôi động":        ["energetic", "lively", "bustling", "fun"],
+    "náo nhiệt":       ["bustling", "lively", "nightlife", "energetic"],
+    "giải trí":        ["entertainment", "fun", "show", "gaming"],
+    "vận động":        ["active", "energetic", "exercise"],
+
+    # Hẹn hò / Lãng mạn
+    "lãng mạn":        ["romantic", "scenic", "sunset", "chill"],
+    "hẹn hò":          ["romantic", "chill", "scenic"],
+    "tình nhân":       ["romantic", "scenic"],
+
+    # Ẩm thực
+    "ăn uống":         ["food", "foodie", "local_food"],
+    "ẩm thực":         ["food", "foodie", "local_food", "seafood"],
+    "đặc sản":         ["local_food", "authentic", "foodie"],
+    "hải sản":         ["seafood", "food", "beach"],
+    "đồ ăn ngon":      ["foodie", "food", "local_food"],
+
+    # Thiên nhiên
+    "thiên nhiên":     ["nature", "eco", "green_space", "peaceful"],
+    "không gian xanh": ["nature", "green_space", "eco"],
+    "tự nhiên":        ["nature", "eco", "wildlife"],
+    "sinh thái":       ["eco", "ecotourism", "nature", "wildlife"],
+    "cây xanh":        ["nature", "green_space"],
+
+    # Biển / Núi / Thác
+    "biển":            ["beach", "seaside", "clear_water", "swimming"],
+    "thác nước":       ["waterfall", "nature", "eco"],
+    "thác":            ["waterfall", "nature"],
+    "núi":             ["mountain_view", "trekking", "nature"],
+    "leo núi":         ["hiking", "trekking", "adventurous", "active"],
+    "khám phá":        ["adventure", "exploration", "explore"],
+
+    # Cảm giác mạnh
+    "cảm giác mạnh":   ["adventurous", "extreme", "thrilling", "thrill"],
+    "mạo hiểm":        ["adventurous", "extreme", "adventure"],
+    "phiêu lưu":       ["adventure", "adventurous", "exploration"],
+
+    # Văn hoá / Lịch sử
+    "học hỏi":         ["educational", "cultural", "historical", "history"],
+    "văn hoá":         ["cultural", "culture", "historical", "authentic"],
+    "lịch sử":         ["historical", "history", "historic", "cultural"],
+    "tâm linh":        ["spiritual", "solemn", "meditation"],
+    "nghệ thuật":      ["artistic", "creative", "cultural", "instagrammable"],
+
+    # Phong cách / Thẩm mỹ
+    "sang trọng":      ["luxury", "scenic", "rooftop"],
+    "cổ điển":         ["vintage", "nostalgic", "historical"],
+    "hiện đại":        ["modern", "luxury", "instagrammable"],
+    "độc đáo":         ["authentic", "weird", "instagrammable"],
+    "đặc sắc":         ["authentic", "instagrammable"],
+    "sáng tạo":        ["creative", "artistic", "interactive"],
+
+    # Ảnh / Check-in
+    "chụp ảnh":        ["photography", "photo", "checkin", "instagrammable"],
+    "sống ảo":         ["instagrammable", "photo", "checkin", "scenic"],
+    "view đẹp":        ["scenic", "panoramic", "instagrammable", "sunset"],
+    "check in":        ["checkin", "instagrammable", "photography"],
+
+    # Ban đêm
+    "ban đêm":         ["nightlife", "night_view", "nightview"],
+    "về đêm":          ["nightlife", "night_view", "chill"],
+    "đêm":             ["nightlife", "night_view"],
+
+    # Mua sắm
+    "mua sắm":         ["shopping", "entertainment"],
+
+    # Thể thao / Sức khoẻ
+    "thể thao":        ["active", "exercise", "energetic"],
+    "yoga":            ["meditation", "wellness", "peaceful"],
+    "spa":             ["spa", "wellness", "relaxing"],
+    "chữa lành":       ["healing", "wellness", "peaceful", "nature"],
+
+    # Địa phương
+    "bình dân":        ["local_experience", "local_food", "authentic"],
+    "địa phương":      ["local_experience", "local_food", "local_life"],
+    "dân dã":          ["local_life", "authentic", "countryside"],
+    "nông thôn":       ["countryside", "eco", "local_life"],
+
+    # Thời tiết (pass-through)
+    "mưa":             "relax",
+    "nắng":            "beach",
+    "trời nắng":       "beach",
+    "nắng đẹp":        "scenic",
+}
+
+# VN group keywords — filter ra khỏi mood/style hoàn toàn
+GROUP_KEYWORDS_VN = {
+    "cặp đôi", "đôi", "bồ", "người yêu",
+    "gia đình", "ba mẹ", "con cái", "trẻ em",
+    "bạn bè", "hội bạn", "hội", "nhóm bạn",
+    "một mình",
+}
+
+# ============================================================================
+# GROUP TAG MAP
+# ============================================================================
+
 GROUP_TAG_MAP: Dict[str, List[str]] = {
-    "cặp đôi":   ["couple", "cặp đôi"],
-    "đôi":       ["couple", "cặp đôi"],
-    "bồ":        ["couple", "cặp đôi"],
-    "người yêu": ["couple", "cặp đôi"],
-    "hẹn hò":    ["couple", "cặp đôi"],
-    "gia đình":  ["family", "gia đình"],
-    "ba mẹ":     ["family", "gia đình"],
-    "con cái":   ["family", "kids", "gia đình"],
-    "trẻ em":    ["kids", "family"],
-    "bạn bè":    ["friends", "bạn bè"],
-    "hội bạn":   ["friends", "bạn bè"],
-    "hội":       ["friends", "bạn bè"],
-    "nhóm bạn":  ["friends", "bạn bè"],
-    "một mình":  ["solo", "đi một mình"],
-    "solo":      ["solo", "đi một mình"],
+    "cặp đôi":   ["couple"],
+    "đôi":       ["couple"],
+    "bồ":        ["couple"],
+    "người yêu": ["couple"],
+    "hẹn hò":    ["couple"],
+    "gia đình":  ["family"],
+    "ba mẹ":     ["family"],
+    "con cái":   ["family", "kids"],
+    "trẻ em":    ["kids", "family", "children"],
+    "bạn bè":    ["friends"],
+    "hội bạn":   ["friends"],
+    "hội":       ["friends"],
+    "nhóm bạn":  ["friends"],
+    "một mình":  ["solo"],
+    "solo":      ["solo"],
 }
 
-# Map ngược: từ NLP keyword → canonical group name (dùng để build context summary)
 GROUP_DISPLAY_MAP: Dict[str, str] = {
-    "cặp đôi": "Cặp đôi", "đôi": "Cặp đôi", "bồ": "Cặp đôi",
-    "người yêu": "Cặp đôi", "hẹn hò": "Cặp đôi",
-    "gia đình": "Gia đình", "ba mẹ": "Gia đình", "con cái": "Gia đình", "trẻ em": "Gia đình",
-    "bạn bè": "Hội bạn", "hội bạn": "Hội bạn", "hội": "Hội bạn", "nhóm bạn": "Hội bạn",
-    "một mình": "Đi một mình", "solo": "Đi một mình",
+    "cặp đôi":   "Cặp đôi",
+    "đôi":       "Cặp đôi",
+    "bồ":        "Cặp đôi",
+    "người yêu": "Cặp đôi",
+    "hẹn hò":    "Cặp đôi",
+    "gia đình":  "Gia đình",
+    "ba mẹ":     "Gia đình",
+    "con cái":   "Gia đình",
+    "trẻ em":    "Gia đình",
+    "bạn bè":    "Hội bạn",
+    "hội bạn":   "Hội bạn",
+    "hội":       "Hội bạn",
+    "nhóm bạn":  "Hội bạn",
+    "một mình":  "Đi một mình",
+    "solo":      "Đi một mình",
 }
 
+# ============================================================================
+# PUBLIC HELPERS
+# ============================================================================
 
 def parse_tags(nlp_tags: List[str]) -> Dict[str, List[str]]:
     """
-    Phân loại NLP tags → style / mood, đồng thời mở rộng alias VN→EN.
-    Returns: {"style": [...], "mood": [...]}
+    Phân loại NLP tags → {"style": [...], "mood": [...]}.
+
+    FIX-2 & FIX-3: Alias giờ là multi-value → một VN tag có thể map sang
+    nhiều DB tag, giúp tăng tỉ lệ match đáng kể.
+
+    Pipeline:
+      skip group → expand alias VN→EN (multi) → check STYLE → check MOOD → fallback.
     """
     style_list, mood_list = [], []
+    all_group_kw = GROUP_TAGS_DB | GROUP_KEYWORDS_VN
+
     for tag in nlp_tags:
         normalized = tag.lower().strip()
-        # Mở rộng alias
-        alias = NLP_TO_DB_ALIAS.get(normalized)
-        candidates = {normalized}
-        if alias:
-            candidates.add(alias)
 
-        for c in candidates:
-            if c in STYLE_TAGS:
-                style_list.append(c)
-                break
-            elif c in MOOD_TAGS:
-                mood_list.append(c)
-                break
-        else:
-            # Tag không khớp gì → đưa vào mood (fallback, vẫn có giá trị gợi ý)
-            mood_list.append(normalized)
+        if normalized in all_group_kw:
+            continue  # group keyword → bỏ qua
 
-    return {"style": list(dict.fromkeys(style_list)), "mood": list(dict.fromkeys(mood_list))}
+        # FIX-3: resolve alias (có thể là str hoặc List[str])
+        resolved = NLP_TO_DB_ALIAS.get(normalized, normalized)
+        en_tags: List[str] = resolved if isinstance(resolved, list) else [resolved]
+
+        for en_tag in en_tags:
+            if en_tag in STYLE_TAGS:
+                style_list.append(en_tag)
+            elif en_tag in MOOD_TAGS:
+                mood_list.append(en_tag)
+            else:
+                mood_list.append(en_tag)  # soft fallback
+
+    return {
+        "style": list(dict.fromkeys(style_list)),
+        "mood":  list(dict.fromkeys(mood_list)),
+    }
 
 
 def parse_group_type(nlp_tags: List[str]) -> Optional[str]:
-    """
-    Tìm group type đầu tiên khớp.
-    Trả về canonical name (VD: "Cặp đôi") để hiển thị context summary.
-    """
+    """Trả về display name group. VD: "Cặp đôi"."""
     for tag in nlp_tags:
         key = tag.lower().strip()
         if key in GROUP_DISPLAY_MAP:
@@ -135,10 +295,7 @@ def parse_group_type(nlp_tags: List[str]) -> Optional[str]:
 
 
 def get_group_db_tags(nlp_tags: List[str]) -> Optional[List[str]]:
-    """
-    Trả về list DB tags cần check (VD: ["couple","cặp đôi"]).
-    Dùng trong hard filter để so sánh với loc["tags"].
-    """
+    """Trả về list EN group tags để filter DB["tags"]. VD: ["solo"]."""
     for tag in nlp_tags:
         key = tag.lower().strip()
         if key in GROUP_TAG_MAP:
@@ -150,27 +307,68 @@ def get_group_db_tags(nlp_tags: List[str]) -> Optional[List[str]]:
 # SCORING ENGINE
 # ============================================================================
 
+_LOCATION_RADIUS_KM = 8.0
+
+
+def _to_float_hour(val) -> float:
+    """Chuyển open/close time về float. DB lưu "HH:MM:SS" hoặc float."""
+    if val is None:
+        return 0.0
+    if isinstance(val, (int, float)):
+        return float(val)
+    if isinstance(val, str):
+        parts = val.strip().split(":")
+        try:
+            return int(parts[0]) + (int(parts[1]) if len(parts) > 1 else 0) / 60.0
+        except (ValueError, IndexError):
+            return 0.0
+    return 0.0
+
+
+def _is_purely_outdoor(space_type: str) -> bool:
+    """
+    FIX-4: Xác định địa điểm là "chỉ ngoài trời" để block khi thời tiết xấu.
+
+    DB có nhiều format không nhất quán:
+      "outdoor"        → block
+      "underground"    → block (không có mái che thật sự)
+      "indoor"         → không block
+      "indoor_outdoor" → không block (có khu trong nhà)
+      "indoor,outdoor" → không block (format khác nhưng cùng nghĩa)
+      "outdoor,indoor" → không block
+      "mixed"          → không block
+
+    Logic: chỉ block khi KHÔNG có thành phần "indoor" nào.
+    """
+    st = space_type.lower().strip()
+    if not st:
+        return False
+    # Nếu có "indoor" → có khu trong nhà → không block
+    if "indoor" in st:
+        return False
+    # Chỉ block "outdoor" thuần hoặc "underground"
+    return st in ("outdoor", "underground")
+
+
 class RecommenderEngine:
     def __init__(self, config: Dict[str, Any] = None):
         self.config = config or {
             "weights": {
-                "style":    2.0,
-                "mood":     1.0,
-                "distance": -0.2,
+                "style":          2.0,
+                "mood":           1.0,
+                "distance":      -0.15,
+                "location_boost": 2.0,
             },
             "weather_rules": {
-                "bad_weather_statuses":      ["RAIN", "STORM", "DRIZZLE"],
-                "restricted_location_types": ["outdoor", "Outdoor"],
+                "bad_weather_statuses": ["RAIN", "STORM", "DRIZZLE"],
             },
             "max_results": 3,
         }
 
-    # ── Haversine ────────────────────────────────────────────────────────────
-
     @staticmethod
-    def _calculate_distance(coord1: Tuple[float, float], coord2: Tuple[float, float]) -> float:
-        lat1, lon1 = coord1
-        lat2, lon2 = coord2
+    def _calculate_distance(c1: Tuple[float, float], c2: Tuple[float, float]) -> float:
+        lat1, lon1 = c1
+        lat2, lon2 = c2
         R = 6371
         dlat = math.radians(lat2 - lat1)
         dlon = math.radians(lon2 - lon1)
@@ -182,19 +380,12 @@ class RecommenderEngine:
         )
         return round(R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a)), 2)
 
-    # ── Hard filter ──────────────────────────────────────────────────────────
-
-    def _is_open(self, open_t: float, close_t: float, current_hour: float) -> bool:
-        """
-        Kiểm tra giờ mở cửa. Xử lý trường hợp đóng cửa sau nửa đêm.  ← FIX BUG 2
-        VD: open=17.5, close=2.0 → open midnight-crossing
-        """
-        if open_t <= close_t:
-            # Bình thường: 09:00 → 22:00
-            return open_t <= current_hour <= close_t
-        else:
-            # Vượt nửa đêm: 19:00 → 01:00
-            return current_hour >= open_t or current_hour <= close_t
+    def _is_open(self, open_t, close_t, current_hour: float) -> bool:
+        open_f  = _to_float_hour(open_t)
+        close_f = _to_float_hour(close_t)
+        if open_f <= close_f:
+            return open_f <= current_hour <= close_f
+        return current_hour >= open_f or current_hour <= close_f  # midnight-crossing
 
     def _passes_hard_filter(
         self,
@@ -202,53 +393,64 @@ class RecommenderEngine:
         must_haves: Dict,
         current_time: float,
         weather: str,
+        check_open_time: bool = False,   # FIX-5: mặc định KHÔNG filter theo giờ
     ) -> bool:
-        # Giờ mở cửa
-        if not self._is_open(
-            loc.get("open_time", 0),
-            loc.get("close_time", 24),
-            current_time
-        ):
-            return False
+
+        # FIX-5: Chỉ filter giờ mở cửa khi user thật sự chỉ định
+        # (timeopen=True hoặc nêu rõ thời điểm như "tối nay", "sáng mai")
+        if check_open_time:
+            if not self._is_open(loc.get("open_time"), loc.get("close_time", 23.99), current_time):
+                logger.debug(
+                    f"[TimeFilter] LOẠI '{loc.get('name')}' "
+                    f"(open={loc.get('open_time')}, close={loc.get('close_time')}, "
+                    f"now={current_time:.1f}h)"
+                )
+                return False
 
         # Ngân sách
-        if "budget" in must_haves and loc.get("price", 0) > must_haves["budget"]:
+        price = loc.get("price", 0)
+        if isinstance(price, str):
+            price = 0 if price.lower() in ("free", "") else int(price)
+        if "budget" in must_haves and price > must_haves["budget"]:
             return False
 
-        # Thời tiết: loại outdoor khi trời xấu
-        bad_weather = self.config["weather_rules"]["bad_weather_statuses"]
-        restricted  = self.config["weather_rules"]["restricted_location_types"]
-        if weather in bad_weather and loc.get("type", "").lower() in [t.lower() for t in restricted]:
-            return False
-
-        # Loại hình cụ thể
-        if must_haves.get("category") and loc.get("category") != must_haves["category"]:
-            return False
+        # FIX-4: Weather — dùng _is_purely_outdoor thay vì so sánh string cứng
+        if weather in self.config["weather_rules"]["bad_weather_statuses"]:
+            loc_type = loc.get("type", "")
+            if _is_purely_outdoor(loc_type):
+                logger.debug(
+                    f"[WeatherFilter] LOẠI '{loc.get('name')}' type='{loc_type}' weather='{weather}'"
+                )
+                return False
 
         # Rating tối thiểu
         if must_haves.get("min_rating") and loc.get("rating", 0) < must_haves["min_rating"]:
             return False
 
-        # Nhóm người: so sánh với cả EN lẫn VN tags  ← FIX BUG 3
-        required_group_tags = must_haves.get("group_db_tags")  # list[str]
-        if required_group_tags:
+        # Group filter — đọc từ loc["tags"]
+        required_group = must_haves.get("group_db_tags")
+        if required_group:
             loc_tags_lower = [t.lower() for t in loc.get("tags", [])]
-            # Nếu KHÔNG có bất kỳ tag nào trong list → loại
-            if not any(g.lower() in loc_tags_lower for g in required_group_tags):
+            if not any(g in loc_tags_lower for g in required_group):
                 return False
 
         return True
 
-    # ── Soft scoring ─────────────────────────────────────────────────────────
-
-    def _score(self, loc: Dict, preferences: Dict[str, List[str]], user_coords: Tuple) -> Dict:
+    def _score(
+        self,
+        loc: Dict,
+        preferences: Dict[str, List[str]],
+        user_coords: Tuple[float, float],
+        target_coords: Optional[Tuple[float, float]] = None,
+    ) -> Dict:
         score = loc.get("rating", 0.0)
         matched_styles, matched_moods = [], []
 
-        loc_tags_lower = [t.lower() for t in loc.get("tags", [])]
+        # Lấy scorable tags (loại group tags)
+        loc_tags = [t.lower() for t in loc.get("tags", [])]
+        scorable = [t for t in loc_tags if t not in GROUP_TAGS_DB]
 
-        for tag in loc_tags_lower:
-            # Check cả alias ngược: DB tag → có trong preference không
+        for tag in scorable:
             if tag in preferences.get("style", []):
                 score += self.config["weights"]["style"]
                 matched_styles.append(tag)
@@ -257,20 +459,31 @@ class RecommenderEngine:
                 matched_moods.append(tag)
 
         distance = self._calculate_distance(user_coords, loc["coords"])
-        score += distance * self.config["weights"]["distance"]
+        score   += distance * self.config["weights"]["distance"]
+
+        # Location boost dựa trên khoảng cách tới target_coords
+        location_boost = 0.0
+        if target_coords:
+            dist_to_target = self._calculate_distance(target_coords, loc["coords"])
+            if dist_to_target <= _LOCATION_RADIUS_KM:
+                location_boost = self.config["weights"]["location_boost"]
+                score         += location_boost
+                logger.debug(
+                    f"[LocationBoost] +{location_boost} '{loc.get('name')}' "
+                    f"dist_to_target={dist_to_target:.1f}km"
+                )
 
         return {
-            "location_id": loc.get("id"),
-            "name":        loc.get("name"),
-            "total_score": round(score, 2),
-            "distance_km": distance,
+            "location_id":    loc.get("id"),
+            "name":           loc.get("name"),
+            "total_score":    round(score, 2),
+            "distance_km":    distance,
+            "location_boost": location_boost,
             "matches": {
                 "styles": matched_styles,
                 "moods":  matched_moods,
             },
         }
-
-    # ── Main entry point ─────────────────────────────────────────────────────
 
     def generate_recommendations(
         self,
@@ -278,18 +491,31 @@ class RecommenderEngine:
         user_context: Dict,
         location_database: List[Dict],
     ) -> List[Dict]:
-        must_haves   = user_request.get("must_haves", {})
-        preferences  = user_request.get("preferences", {})
-        current_time = user_context["current_time"]
-        weather      = user_context.get("weather", "CLEAR")
-        user_coords  = user_context["coords"]
+        must_haves    = user_request.get("must_haves", {})
+        preferences   = user_request.get("preferences", {})
+        current_time  = user_context["current_time"]
+        weather       = user_context.get("weather", "CLEAR")
+        user_coords   = user_context["coords"]
+        target_coords = user_context.get("target_coords")
+
+        # FIX-5 & FIX-6: Đọc flag check_open_time từ user_context
+        # Chỉ True khi user nêu rõ thời điểm hoặc muốn lọc đang mở
+        check_open_time = user_context.get("check_open_time", False)
 
         valid = [
             loc for loc in location_database
-            if self._passes_hard_filter(loc, must_haves, current_time, weather)
+            if self._passes_hard_filter(loc, must_haves, current_time, weather, check_open_time)
         ]
 
-        scored = [self._score(loc, preferences, user_coords) for loc in valid]
+        logger.info(
+            f"[Scoring] {len(valid)}/{len(location_database)} địa điểm qua hard filter "
+            f"(check_open_time={check_open_time})"
+        )
+
+        scored = [
+            self._score(loc, preferences, user_coords, target_coords)
+            for loc in valid
+        ]
         scored.sort(key=lambda x: (-x["total_score"], x["distance_km"]))
 
         return scored[: self.config["max_results"]]

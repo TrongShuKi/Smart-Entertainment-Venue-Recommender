@@ -54,24 +54,29 @@ DEFAULT_COORDS: Tuple[float, float] = (10.7769, 106.7009)  # Trung tâm TP.HCM
 # HELPERS
 # ============================================================================
 
+_TZ_HCM = ZoneInfo("Asia/Ho_Chi_Minh")
+
 def _parse_current_hour(current_time_str: Optional[str]) -> float:
     """
-    Chuyển NLP current_time string → float hour (giờ TP.HCM, UTC+7).
-    Trả về giờ thực tế nếu không có input.
+    Chuyển đổi chuỗi thời gian từ NLP (định dạng yyyy-mm-dd hh:mm:ss) thành số thực (float hour).
+    Ví dụ: "2026-05-30 14:30:00" -> 14.5
     """
-    now_hcm = datetime.now(tz=_TZ_HCM)
-    now = now_hcm.hour + now_hcm.minute / 60
+    # Trường hợp chuỗi bị rỗng hoặc lỗi từ phía AI, tự động lấy giờ hiện tại ngoài đời thực của VN
+    if not current_time_str:
+        now_hcm = datetime.now(tz=_TZ_HCM)
+        return now_hcm.hour + now_hcm.minute / 60.0
 
-    if not current_time_str or current_time_str.lower() == "now":
-        return now
-
-    t = current_time_str.lower()
-    if any(w in t for w in ["tối", "evening"]):         return 20.0
-    if any(w in t for w in ["sáng", "morning"]):        return 9.0
-    if any(w in t for w in ["trưa", "noon"]):           return 12.0
-    if any(w in t for w in ["chiều", "afternoon"]):     return 15.0
-    if any(w in t for w in ["đêm", "khuya", "night"]):  return 22.0
-    return now
+    try:
+        # Ép kiểu và đọc chính xác định dạng chuỗi yyyy-mm-dd hh:mm:ss do Gemini xuất ra
+        dt = datetime.strptime(current_time_str.strip(), "%Y-%m-%d %H:%M:%S")
+        
+        return dt.hour + dt.minute / 60.0
+        
+    except Exception as e:
+        logger.warning(f"[Time Parse] Lỗi không thể parse chuỗi thời gian '{current_time_str}' từ AI: {e}")
+        # Fallback: Nếu chuỗi lỗi cấu trúc, app vẫn chạy tiếp bằng cách lấy giờ thực tế
+        now_hcm = datetime.now(tz=_TZ_HCM)
+        return now_hcm.hour + now_hcm.minute / 60.0
 
 
 def _build_context_string(nlp: Dict, weather_condition: str, temperature: float) -> str:
@@ -184,7 +189,7 @@ async def get_suggestions(
     target_coords: Optional[Tuple[float, float]] = None
     if nlp_location:
         try:
-            lat_t, lon_t  = await get_coordinates(nlp_location + ", TP.HCM")
+            lat_t, lon_t  = await get_coordinates(nlp_location)
             target_coords = (lat_t, lon_t)
             logger.info(f"[LocationBoost] target_coords={target_coords} cho '{nlp_location}'")
         except Exception:

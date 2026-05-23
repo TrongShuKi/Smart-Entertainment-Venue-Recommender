@@ -29,6 +29,10 @@
       // Scroll về đầu trang
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
+      // Clear content ô tìm kiếm
+      const searchInput = document.getElementById('main-search-input');
+      if (searchInput) { searchInput.value = '';}
+
       this._updateUI();
       localStorage.removeItem('st_session');
       showToast('Đã đăng xuất', 'success', 2000);

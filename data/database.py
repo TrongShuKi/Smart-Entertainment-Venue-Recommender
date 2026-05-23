@@ -1,11 +1,6 @@
 ﻿"""
 database.py — fixed
 ====================
-FIX: Thêm "region" vào _row_to_dict để scoring và response có thể dùng
-     thông tin quận/khu vực trực tiếp từ DB (thay vì phải geocode).
-
-Module quản lý dữ liệu địa điểm từ SQLite.
-
 Exports:
     get_all_places() → list[dict]   ← được gọi bởi chat_router
     build_database()                ← chạy ETL Excel → SQLite (chỉ gọi 1 lần)
@@ -68,15 +63,11 @@ def _parse_tags(raw_mood: str, raw_group: str) -> List[str]:
 def _row_to_dict(row: sqlite3.Row) -> Dict:
     """
     Chuyển 1 sqlite3.Row → dict chuẩn hoá.
-
-    FIX: Thêm "region" để frontend / scoring có thể dùng text matching
-         khu vực thay vì phải geocode qua API.
     """
     lat = row["latitude"]  or 0.0
     lon = row["longitude"] or 0.0
 
     # FIX: open_time=0.0 là midnight (00:00), không nên bị coerce sang 0.0 rồi
-    # bị `or` override. Dùng None-safe logic thay vì falsy check.
     raw_open  = _parse_time(row["open_time"])
     raw_close = _parse_time(row["close_time"])
 
@@ -84,6 +75,9 @@ def _row_to_dict(row: sqlite3.Row) -> Dict:
         # ── Định danh ──────────────────────────────────────────────────
         "id":         str(row["id"]),
         "name":       str(row["place_name"] or "").strip(),
+
+        # ── region để dùng cho text matching / hiển thị địa chỉ
+        "region":     str(row["region"] or "").strip(),
 
         # ── Phân loại ──────────────────────────────────────────────────
         "category":   str(row["category"]   or "").strip(),
@@ -96,15 +90,10 @@ def _row_to_dict(row: sqlite3.Row) -> Dict:
         # ── Bản đồ ─────────────────────────────────────────────────────
         "coords":     (float(lat), float(lon)),
 
-        # FIX: Thêm region để dùng cho text matching / hiển thị địa chỉ
-        "region":     str(row["region"] or "").strip(),
-
         # ── Tags (scoring dùng để match) ───────────────────────────────
         "tags":       _parse_tags(row["mood_tags"], row["group_tags"]),
 
         # ── Giờ mở/đóng cửa ────────────────────────────────────────────
-        # FIX: Không dùng `or` để tránh 0.0 (midnight) bị override sai
-        # open_time=0.0 hợp lệ (mở từ 00:00), close_time=0.0 → coi là 24.0
         "open_time":  raw_open,
         "close_time": raw_close if raw_close > 0.0 else 24.0,
 
@@ -167,8 +156,16 @@ def build_database() -> None:
         if df[col].dtype == "object":
             df[col] = df[col].astype(str).str.strip()
 
+    # chuẩn hóa id số nguyên
+    if "id" in df.columns:
+        df["id"] = df["id"].astype(str).str.replace(r"\.0$", "", regex=True)
+
+    # space_type viết thường
+    if "space_type" in df.columns:
+        df["space_type"] = df["space_type"].astype(str).str.lower().str.strip()
+
     if "rating" in df.columns:
-        df["rating"] = pd.to_numeric(df["rating"], errors="coerce").fillna(0.0)
+        df["rating"] = pd.to_numeric(df["rating"].astype(str).str.replace(",", "."), errors="coerce").fillna(0.0)
 
     if "price" in df.columns:
         df["price"] = df["price"].replace({"free": "0", "Free": "0"})

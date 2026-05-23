@@ -11,9 +11,10 @@ import os
 import re
 import logging
 import threading
+from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
- 
+
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
@@ -27,22 +28,22 @@ API_KEY = os.getenv("GEMINI_API_KEY")
 # ==== Fallback
 _FALLBACK_GENERATE = {"description": "", "fact": ""}
 _FALLBACK_NLP = {
-    "location": None, "max_price": None, "tags": [],
-    "timeopen": None, "min_rating": None, "current_time": None,
+    "location": None,
+    "max_price": None,
+    "tags": [],
+    "timeopen": None,
+    "min_rating": None,
+    "current_time": None,
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
 # CACHE generate_text
 # ══════════════════════════════════════════════════════════════════════════════
 _AI_CACHE_FILE = (
-    Path(__file__).resolve()
-    .parent 
-    .parent 
-    .parent 
-    / "data"
-    / "ai_content_cache.json"
+    Path(__file__).resolve().parent.parent.parent / "data" / "ai_content_cache.json"
 )
 _cache_lock = threading.Lock()
+
 
 def _load_ai_cache() -> dict:
     try:
@@ -51,7 +52,8 @@ def _load_ai_cache() -> dict:
     except Exception as e:
         logger.warning(f"[AI Cache] Lỗi đọc: {e}")
     return {}
- 
+
+
 def _save_ai_cache(cache: dict) -> None:
     try:
         _AI_CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -61,6 +63,7 @@ def _save_ai_cache(cache: dict) -> None:
         )
     except Exception as e:
         logger.warning(f"[AI Cache] Lỗi ghi: {e}")
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SCHEMA cho generate_text và extract_nlp_intent
@@ -80,13 +83,43 @@ class GeneratedPlaceContent(BaseModel):
         )
     )
 
+
 class NLPResponse(BaseModel):
-    location:     Optional[str]   = Field(default=None, description="Tên quận/huyện/địa điểm. Nếu không có để null.")
-    max_price:    Optional[int]   = Field(default=None, description="Mức giá tối đa quy ra VNĐ. Nếu không có để null.")
-    tags:         List[str]       = Field(default_factory=list, description="Mảng từ khóa sở thích, không gian.")
-    timeopen:     Optional[bool]  = Field(default=None, description="True nếu muốn chỗ đang mở cửa.")
-    min_rating:   Optional[float] = Field(default=None, description="Số sao tối thiểu. Nếu không có để null.")
-    current_time: Optional[str]   = Field(default=None, description="Thời gian đi chơi, 'now' nếu đi ngay.")
+    location: Optional[str] = Field(
+        default=None,
+        description="Tên Quận/Thành phố đối với các thành phố trực thuộc trung ương hoặc tên tỉnh tương ứng với địa điểm mà người dùng đề cập."
+        "Ví dụ: 'Quận 1', 'Quận Hoàn Kiếm', 'Quảng Bình', 'Nghệ An', 'Dĩ An'."
+        "QUAN TRỌNG: Bắt buộc chuyển các khu vực lóng/không chính thức (VD: 'Làng Đại học', 'Phố đi bộ') "
+            "thành tên Quận/Huyện/Thành phố hợp lệ (VD: 'Làng Đại học' -> 'Dĩ An'). "
+        "Nếu không có để null."
+    )
+    max_price: Optional[int] = Field(
+        default=None, 
+        description="Mức giá tối đa quy ra VNĐ. Nếu không có để null."
+    )
+    tags: List[str] = Field(
+        default_factory=list, 
+        description=
+            "Mảng từ khóa sở thích, không gian và nhóm đi cùng."
+            "LƯU Ý 1: Bắt buộc giữ lại các từ khóa chỉ đối tượng (VD: 'người yêu', 'gia đình', 'bạn bè', 'trẻ em'...). "
+            "TUYỆT ĐỐI KHÔNG tự suy diễn hay gán bừa nhóm đi cùng nếu người dùng không nhắc đến. Ví dụ: Khách nói 'ăn với người iu' -> mảng tags có chữ 'người yêu'. Khách không nói đi với ai -> không thêm từ khóa người."
+            "LƯU Ý 2: KHUYẾN KHÍCH suy diễn thêm các từ khóa về cảm xúc, không gian (VD: lãng mạn, chill, yên tĩnh) nếu phù hợp với ngữ cảnh của câu chat."
+    )
+    timeopen: Optional[bool] = Field(
+        default=None, 
+        description="True nếu muốn chỗ đang mở cửa."
+    )
+    min_rating: Optional[float] = Field(
+        default=None, 
+        description="Số sao tối thiểu. Nếu không có để null."
+    )
+    current_time: Optional[str] = Field(
+        default=None,
+        description="Thời điểm người dùng đề cập. "
+        "Trả về chuỗi yyyy-mm-dd hh:mm:ss. Ví dụ: '2026-05-30 12:03:30', '2026-10-29 00:59:00'. "
+        "Nếu không đề cập đến thì trả về thời gian hiện tại."
+    )
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # generate_text
@@ -103,7 +136,7 @@ def generate_text(location_name: str, category: str, user_context: str) -> dict:
     if location_name in cache:
         logger.info(f"[AI Cache] HIT: '{location_name}'")
         return cache[location_name]
- 
+
     logger.info(f"[AI Cache] MISS -> goi Gemini: '{location_name}'")
 
     # 2. Goi Gemini
@@ -138,12 +171,12 @@ def generate_text(location_name: str, category: str, user_context: str) -> dict:
 
         # 3. Luu cache
         with _cache_lock:
-            latest_cache = _load_ai_cache() 
+            latest_cache = _load_ai_cache()
             latest_cache[location_name] = result
             _save_ai_cache(latest_cache)
-            
+
         logger.info(f"[AI Cache] Da luu: '{location_name}' -> {_AI_CACHE_FILE}")
- 
+
         return result
 
     except Exception as e:
@@ -173,9 +206,11 @@ def extract_nlp_intent(user_chat: str) -> dict:
     """
     try:
         client = genai.Client(api_key=API_KEY)
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        system_instruction = """
+        system_instruction = f"""
         Bạn là hệ thống AI phân tích ngôn ngữ tự nhiên cho ứng dụng Smart Tourism.
+        Thời gian hiện tại là {current_time}.
         Nhiệm vụ: Trích xuất thông tin sang JSON THEO ĐÚNG CẤU TRÚC 6 TRƯỜNG ĐÃ QUY ĐỊNH.
 
         XỬ LÝ THÔNG MINH (KHÔNG ĐỔI CẤU TRÚC JSON):

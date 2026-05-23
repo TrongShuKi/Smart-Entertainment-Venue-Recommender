@@ -1,74 +1,170 @@
 {
-  "Chùa Bửu Long": {
-    "description": "Chùa Bửu Long thu hút du khách bởi kiến trúc Thái Lan độc đáo và không gian thanh tịnh, mang đến một chốn dừng chân lý tưởng để đi dạo và tìm kiếm sự riêng tư, đặc biệt trong tiết trời nhiều mây. Nơi đây là điểm đến phù hợp cho những ai muốn thoát khỏi sự ồn ào và chiêm nghiệm một mình.",
-    "fact": "Chùa Bửu Long từng được tạp chí kiến trúc National Geographic của Mỹ bình chọn là một trong 10 ngôi chùa có kiến trúc đẹp nhất thế giới."
+  "Dinh Độc Lập": {
+    "description": "Dinh Độc Lập, một biểu tượng kiến trúc và lịch sử tại Thành phố Hồ Chí Minh, là nơi du khách có thể khám phá những dấu ấn quan trọng của Việt Nam. Một chuyến thăm nơi đây mang đến cơ hội độc đáo để chiêm nghiệm về quá khứ và sự chuyển mình của đất nước.",
+    "fact": "Chiếc xe tăng 390 đã húc đổ cổng Dinh Độc Lập vào ngày 30/4/1975 hiện vẫn được trưng bày tại khuôn viên Dinh."
   },
-  "Vinhomes Central Park": {
-    "description": "Vinhomes Central Park là điểm đến lý tưởng để tìm kiếm sự bình yên và riêng tư, nơi du khách có thể thong thả dạo bước dưới tán cây xanh mát, tạm quên đi sự ồn ào của đô thị. Dù thời tiết có chút oi ả, không gian rộng lớn cùng nhiều góc yên tĩnh vẫn mang lại trải nghiệm thư thái cho những ai muốn tận hưởng khoảnh khắc một mình.",
-    "fact": "Công viên Vinhomes Central Park được thiết kế lấy cảm hứng từ công viên Central Park nổi tiếng tại New York, mang đến một không gian xanh đẳng cấp giữa lòng thành phố."
-  },
-  "Van Phuc Water Show": {
-    "description": "Van Phuc Water Show là một sân khấu nhạc nước hiện đại, mang đến những màn trình diễn ánh sáng, âm thanh và hiệu ứng nước đầy mê hoặc. Đây là điểm đến lý tưởng để thưởng thức nghệ thuật giải trí đẳng cấp trong một không gian mở.",
-    "fact": "Van Phuc Water Show tự hào là sân khấu nhạc nước lớn nhất Việt Nam, với quy mô đầu tư và công nghệ trình diễn ấn tượng."
-  },
-  "Bưu điện Thành phố": {
-    "description": "Bưu điện Thành phố, một công trình kiến trúc Pháp cổ kính, mang đến không gian rộng rãi và thoáng đãng, lý tưởng cho những ai tìm kiếm một góc yên tĩnh để học tập hoặc làm việc trong tiết trời oi ả. Nơi đây không chỉ là điểm tham quan lịch sử mà còn là chốn dừng chân bình yên giữa lòng đô thị nhộn nhịp.",
-    "fact": "Bưu điện Thành phố được thiết kế bởi kiến trúc sư lừng danh Gustave Eiffel, người đứng sau biểu tượng Tháp Eiffel ở Paris."
-  },
-  "Đường sách Nguyễn Văn Bình": {
-    "description": "Đường sách Nguyễn Văn Bình là một không gian văn hóa độc đáo giữa lòng Sài Gòn, nơi du khách có thể tìm thấy sự yên bình để học tập hay đọc sách. Dù thời tiết bên ngoài có oi ả, những bóng cây và không khí tri thức tại đây vẫn mang lại cảm giác thư thái.",
-    "fact": "Đây là tuyến đường sách đầu tiên và duy nhất tại Thành phố Hồ Chí Minh, được khai trương vào năm 2016."
-  },
-  "Bảo tàng Biệt động": {
-    "description": "Bảo tàng Biệt động là nơi lưu giữ những câu chuyện thầm lặng nhưng đầy oanh liệt về lực lượng biệt động Sài Gòn trong cuộc kháng chiến. Với không gian yên tĩnh và nhiều hiện vật giá trị, đây là điểm đến lý tưởng cho những ai muốn tìm hiểu lịch sử hoặc cần một nơi riêng tư để học tập giữa lòng thành phố.",
-    "fact": "Bảo tàng Biệt động Sài Gòn thực chất là một căn hầm bí mật từng là nơi ẩn náu và chỉ đạo của lực lượng biệt động ngay trong lòng địch."
-  },
-  "Bảo tàng Áo Dài": {
-    "description": "Bảo tàng Áo Dài mang đến cái nhìn sâu sắc về lịch sử và sự phát triển của trang phục truyền thống Việt Nam, từ những thiết kế cổ xưa đến hiện đại. Với không gian tĩnh lặng giữa khu vực Thủ Đức, nơi đây có thể là một địa điểm lý tưởng cho những ai tìm kiếm sự riêng tư để học tập hoặc nghiên cứu.",
-    "fact": "Bảo tàng Áo Dài là bảo tàng tư nhân đầu tiên ở Việt Nam dành riêng cho áo dài, được thành lập bởi nhà thiết kế Sĩ Hoàng."
-  },
-  "Suối Tiên": {
-    "description": "Công viên Văn hóa Suối Tiên là một khu vui chơi giải trí phức hợp nổi tiếng tại Thành phố Hồ Chí Minh, nơi du khách có thể khám phá sự kết hợp độc đáo giữa các trò chơi hiện đại và kiến trúc mang đậm nét văn hóa, lịch sử Việt Nam. Vào một ngày nhiều mây với nhiệt độ 34°C, nơi đây vẫn là điểm đến sôi động với nhiều hoạt động giải trí đa dạng.",
-    "fact": "Suối Tiên là công viên giải trí đầu tiên ở Việt Nam áp dụng mô hình kết hợp văn hóa, lịch sử dân tộc với các loại hình giải trí hiện đại."
-  },
-  "Saigon Centre (Takashimaya)": {
-    "description": "Saigon Centre mang đến không gian hiện đại và thoải mái, lý tưởng để tránh những cơn mưa bất chợt và tận hưởng buổi chiều thư giãn bên người thương tại trung tâm Quận 1. Với ngân sách hợp lý, du khách có thể khám phá nhiều lựa chọn ẩm thực hoặc mua sắm nhẹ nhàng trong một không gian mát mẻ và yên bình.",
-    "fact": "Saigon Centre là địa điểm đầu tiên tại Việt Nam có sự hiện diện của thương hiệu bách hóa cao cấp Takashimaya đến từ Nhật Bản."
-  },
-  "Bến Bạch Đằng": {
-    "description": "Giữa tiết trời Đà Lạt se lạnh 18°C cùng những hạt mưa bay lất phất, Bến Bạch Đằng mang đến một không gian yên tĩnh lý tưởng để du khách thư giãn và chiêm nghiệm, tách biệt khỏi nhịp sống hối hả.",
-    "fact": "Đà Lạt được mệnh danh là 'Thành phố ngàn hoa' với khí hậu ôn hòa và hệ thực vật phong phú, tạo nên vẻ đẹp đặc trưng hiếm nơi nào có được tại Việt Nam."
-  },
-  "Thiso Mall Sala": {
-    "description": "Giữa tiết trời se lạnh và mưa phùn, Thiso Mall Sala là điểm đến lý tưởng để trú ẩn, mang đến không gian hiện đại và rộng rãi. Du khách có thể tìm một góc yên tĩnh tại các quán cà phê, thưởng thức đồ uống ấm nóng với ngân sách hợp lý để thư giãn.",
-    "fact": "Thiso Mall Sala là trung tâm thương mại thuộc Tập đoàn THACO, nổi bật với kiến trúc hiện đại và là một trong những điểm nhấn của khu đô thị Sala Thủ Thiêm."
-  },
-  "Saigon Opera House": {
-    "description": "Nhà hát Lớn Sài Gòn, một công trình kiến trúc Pháp cổ kính và tráng lệ, là điểm đến văn hóa độc đáo cho du khách khám phá. Dù thời tiết 30°C và nhiều mây, vẻ đẹp của nhà hát vẫn thu hút ánh nhìn, mời gọi bước vào thế giới nghệ thuật.",
-    "fact": "Nhà hát Lớn Sài Gòn từng là trụ sở Quốc hội của Việt Nam Cộng hòa từ năm 1956 đến 1975."
-  },
-  "City Park Global City": {
-    "description": "City Park Global City mang đến một không gian xanh mát và kiến trúc độc đáo, lý tưởng cho những cặp đôi tìm kiếm khoảnh khắc lãng mạn giữa lòng đô thị. Dưới tiết trời nhiều mây, đây là điểm đến hoàn hảo để dạo bước và tận hưởng vẻ đẹp cảnh quan.",
-    "fact": "City Park Global City được thiết kế bởi Foster + Partners, một trong những công ty kiến trúc hàng đầu thế giới."
+  "Phố đi bộ": {
+    "description": "Phố đi bộ, thường là trung tâm sôi động của các hoạt động giải trí và mua sắm, có thể mang một vẻ đẹp tĩnh lặng khác lạ dưới cơn mưa lớn, tạo nên khung cảnh lãng mạn nhưng cũng đầy thử thách cho du khách.",
+    "fact": "Nhiều phố đi bộ trên thế giới từng là những con đường giao thông sầm uất trước khi được chuyển đổi hoàn toàn thành không gian dành riêng cho người đi bộ."
   },
   "Landmark 81": {
-    "description": "Tọa lạc tại đỉnh cao của Landmark 81, đài quan sát Skyview mang đến một không gian lý tưởng cho những khoảnh khắc lãng mạn, nơi du khách có thể chiêm ngưỡng toàn cảnh thành phố rực rỡ từ trên cao. Dù tiết trời nhiều mây, vẻ đẹp của Sài Gòn vẫn hiện lên đầy ấn tượng, tạo nên một trải nghiệm khó quên với tầm nhìn tuyệt đẹp.",
-    "fact": "Với chiều cao 461.2 mét, Landmark 81 là tòa nhà cao nhất Việt Nam và từng nằm trong top 20 tòa nhà cao nhất thế giới tại thời điểm khánh thành."
+    "description": "Landmark 81 là biểu tượng kiến trúc hiện đại tại TP.HCM, mang đến không gian sang trọng và lãng mạn lý tưởng cho những buổi hẹn hò đáng nhớ. Du khách có thể cùng nhau chiêm ngưỡng toàn cảnh thành phố lung linh từ trên cao, thưởng thức ẩm thực tinh hoa và tận hưởng những trải nghiệm mua sắm đẳng cấp.",
+    "fact": "Landmark 81 là tòa nhà cao nhất Việt Nam và từng là tòa nhà cao nhất Đông Nam Á."
   },
-  "Emart Sala": {
-    "description": "Emart Sala là một trung tâm mua sắm hiện đại, lý tưởng cho những ai tìm kiếm không gian trong nhà mát mẻ để trú mưa và thư giãn nhẹ nhàng. Tại đây, du khách có thể ghé qua khu ẩm thực hoặc siêu thị để tìm kiếm các món ăn vặt phù hợp với ngân sách hạn chế.",
-    "fact": "Emart Sala là chi nhánh thứ hai của chuỗi siêu thị Emart đến từ Hàn Quốc tại Việt Nam, mang đến trải nghiệm mua sắm chuẩn Hàn Quốc ngay tại trung tâm thành phố."
+  "Bảo tàng Mỹ thuật": {
+    "description": "Khi tâm trạng cần được xoa dịu, Bảo tàng Mỹ thuật mở ra một không gian tĩnh lặng, nơi những tác phẩm nghệ thuật có thể khơi gợi cảm xúc, mang đến sự chiêm nghiệm và một góc nhìn mới mẻ.",
+    "fact": "Tòa nhà chính của Bảo tàng Mỹ thuật Việt Nam được xây dựng từ những năm 1930 với kiến trúc Pháp cổ kính, ban đầu là một trường nữ sinh."
   },
-  "Acoustic Bar Ngô Thời Nhiệm": {
-    "description": "Acoustic Bar Ngô Thời Nhiệm mang đến không gian âm nhạc sống động và lãng mạn, lý tưởng cho những buổi tối hẹn hò hoặc thư giãn cùng bạn bè. Với mức giá phải chăng cùng không gian ấm cúng, đây là điểm đến tuyệt vời để thưởng thức giai điệu du dương trong một buổi tối Sài Gòn dịu mát.",
-    "fact": "Acoustic Bar Ngô Thời Nhiệm là một trong những quán bar tiên phong tại Sài Gòn chuyên về nhạc sống acoustic, thu hút đông đảo khán giả yêu nhạc từ nhiều năm nay."
-  },
-  "CỘI Saigon": {
-    "description": "CỘI Saigon là một không gian âm nhạc sống động, lý tưởng cho những buổi tối gia đình tìm kiếm sự thư giãn và giải trí, đặc biệt khi thời tiết mưa. Với diện tích rộng rãi, nơi đây chào đón du khách cùng trẻ nhỏ đến thưởng thức không khí ấm cúng.",
-    "fact": "CỘI Saigon được thiết kế với kiến trúc độc đáo, kết hợp giữa nét truyền thống và hiện đại, mang đến trải nghiệm âm nhạc khác biệt cho khán giả."
+  "Bến Bạch Đằng": {
+    "description": "Bến Bạch Đằng là một không gian xanh mát bên sông Sài Gòn, lý tưởng để du khách tìm kiếm sự lãng mạn và chiêm ngưỡng vẻ đẹp đô thị, đặc biệt trong tiết trời nhiều mây dịu mát. Nơi đây mang đến tầm nhìn khoáng đạt và là điểm hẹn hò lý tưởng cho những buổi tối lãng mạn.",
+    "fact": "Tên gọi Bến Bạch Đằng gợi nhớ về ba trận thủy chiến lừng danh trong lịch sử Việt Nam, nơi quân dân ta đã đánh bại quân xâm lược trên sông Bạch Đằng."
   },
   "Phố đi bộ Nguyễn Huệ": {
-    "description": "Phố đi bộ Nguyễn Huệ mang đến một không gian rộng lớn, lý tưởng cho du khách tản bộ thư thái và chiêm ngưỡng vẻ đẹp hiện đại, lãng mạn của trung tâm thành phố, đặc biệt vào buổi tối. Đây là điểm hẹn hò lý tưởng cho những cặp đôi muốn tìm kiếm một buổi tối lãng mạn.",
-    "fact": "Phố đi bộ Nguyễn Huệ ngày nay từng là một con kênh mang tên Kênh Chợ Vải vào thế kỷ 19, sau đó được lấp đi và phát triển thành đại lộ Nguyễn Huệ."
+    "description": "Phố đi bộ Nguyễn Huệ mang đến không gian đô thị rộng lớn và lãng mạn, lý tưởng cho những du khách muốn tận hưởng vẻ đẹp của Sài Gòn về đêm. Dưới tiết trời mây nhẹ 28°C, đây là điểm đến hoàn hảo để tản bộ, ngắm nhìn kiến trúc và cảm nhận nhịp sống sôi động của thành phố.",
+    "fact": "Phố đi bộ Nguyễn Huệ ngày nay từng là một con kênh có tên Kênh Chợ Vải, sau đó được lấp đi để xây dựng đại lộ."
+  },
+  "Đỉnh Mã Pí Lèng": {
+    "description": "Đỉnh Mã Pí Lèng mang đến khung cảnh hùng vĩ của núi non trùng điệp và hẻm vực sông Nho Quế, là điểm đến lý tưởng để cả gia đình cùng chiêm ngưỡng vẻ đẹp thiên nhiên ngoạn mục. Dù thời tiết nhiều mây có thể tạo nên một bức tranh huyền ảo, nhiệt độ 29°C vẫn khá dễ chịu cho các hoạt động khám phá và vui chơi.",
+    "fact": "Mã Pí Lèng được mệnh danh là một trong Tứ Đại Đỉnh Đèo của Việt Nam, với con đường Hạnh Phúc được xây dựng bằng sức người trong gần 6 năm."
+  },
+  "Hang Én Adventure": {
+    "description": "Hang Én Adventure mang đến hành trình khám phá đầy hấp dẫn, nơi các gia đình có thể cùng nhau tận hưởng những khoảnh khắc vui vẻ và trải nghiệm vẻ đẹp kỳ vĩ của thiên nhiên. Với thời tiết dịu mát, đây là cơ hội tuyệt vời để tạo nên những kỷ niệm đáng nhớ cho mọi thành viên.",
+    "fact": "Hang Én là hang động lớn thứ ba thế giới và là nơi sinh sống của hàng ngàn con chim én, tạo nên một hệ sinh thái độc đáo."
+  },
+  "AEON Mall Bình Dương Canary": {
+    "description": "AEON Mall Bình Dương Canary là điểm đến lý tưởng để trú mưa và thư giãn, nơi du khách có thể tận hưởng không gian mát mẻ cùng nhiều lựa chọn giải trí phù hợp với ngân sách hạn hẹp. Tại đây, những ai tìm kiếm sự thoải mái trong ngày mưa có thể dễ dàng tìm thấy các quán cà phê, tiệm trà sữa hay khu ẩm thực với nhiều món ăn vặt hấp dẫn.",
+    "fact": "AEON Mall Bình Dương Canary là trung tâm thương mại AEON đầu tiên được xây dựng tại Việt Nam."
+  },
+  "City Park Global City": {
+    "description": "City Park Global City mang đến một không gian xanh mát và yên bình, lý tưởng cho những cặp đôi tìm kiếm khoảnh khắc lãng mạn dưới bầu trời nhiều mây. Nơi đây là điểm đến hoàn hảo để tận hưởng buổi chiều êm đềm cùng người thương mà không cần lo lắng về chi phí.",
+    "fact": "City Park Global City được lấy cảm hứng từ công viên nổi tiếng Central Park của New York, mang đến một không gian xanh đẳng cấp quốc tế ngay tại Việt Nam."
+  },
+  "Công viên Biên Hùng Biên Hòa": {
+    "description": "Công viên Biên Hùng là chốn dừng chân lý tưởng cho những cặp đôi muốn tìm không gian lãng mạn, yên bình giữa lòng Biên Hòa. Trong tiết trời nhiều mây và dễ chịu, du khách có thể cùng người thương tản bộ trên những lối đi rợp bóng cây xanh mát, tận hưởng khoảnh khắc riêng tư.",
+    "fact": "Công viên Biên Hùng từng được biết đến với tên gọi Công viên An Bình trước năm 1975."
+  },
+  "Chợ đêm Biên Hòa": {
+    "description": "Chợ đêm Biên Hòa mang đến không gian lãng mạn lý tưởng cho các cặp đôi dạo bước, thưởng thức ẩm thực đường phố phong phú và mua sắm những món quà lưu niệm độc đáo. Với mức ngân sách 300.000đ, du khách có thể tận hưởng trọn vẹn một buổi tối ấm cúng dưới tiết trời nhiều mây dịu mát.",
+    "fact": "Chợ đêm Biên Hòa được mệnh danh là thiên đường ẩm thực đường phố, nơi hội tụ vô vàn món ăn vặt hấp dẫn với hương vị đặc trưng của vùng đất Đồng Nai."
+  },
+  "Chùa Bửu Long": {
+    "description": "Tọa lạc tại Thủ Đức, Chùa Bửu Long là điểm đến lý tưởng cho những ai tìm kiếm sự bình yên và thư thái một mình, với kiến trúc Thái Lan độc đáo nổi bật giữa không gian xanh mát.",
+    "fact": "Chùa Bửu Long từng được tạp chí National Geographic bình chọn là một trong 10 ngôi chùa có kiến trúc đẹp nhất thế giới."
+  },
+  "Khu du lịch Suối Tiên Farm": {
+    "description": "Khu du lịch Suối Tiên Farm là điểm đến lý tưởng tại Đà Lạt cho những ai tìm kiếm sự bình yên và thư giãn một mình giữa tiết trời se lạnh, mây phủ. Du khách có thể thảnh thơi khám phá vườn cây ăn trái độc đáo và tận hưởng không gian xanh mát, trong lành.",
+    "fact": "Suối Tiên Farm nổi tiếng là nơi đầu tiên tại Đà Lạt trồng thành công nhiều loại trái cây nhập khẩu độc đáo như cà chua đen và dưa pepino."
+  },
+  "Suối Tiên": {
+    "description": "Suối Tiên mang đến một không gian giải trí độc đáo, nơi du khách có thể tìm thấy những góc riêng để thư giãn và khám phá theo nhịp độ của riêng mình. Trong một ngày nhiều mây và se lạnh, đây có thể là điểm đến thú vị để trải nghiệm văn hóa và kiến trúc độc đáo.",
+    "fact": "Suối Tiên nổi tiếng với kiến trúc độc đáo lấy cảm hứng từ các truyền thuyết dân gian Việt Nam, đặc biệt là sự tích Lạc Long Quân và Âu Cơ."
+  },
+  "Đèo Mã Pí Lèng": {
+    "description": "Đèo Mã Pí Lèng, một trong \"Tứ đại đỉnh đèo\" của Việt Nam, mở ra khung cảnh hùng vĩ với những vách núi đá tai mèo và dòng sông Nho Quế uốn lượn, tạo nên một không gian lãng mạn và tráng lệ cho các cặp đôi. Trong tiết trời nhiều mây, nơi đây càng thêm huyền ảo, mang đến trải nghiệm khó quên giữa thiên nhiên kỳ vĩ.",
+    "fact": "Con đường Hạnh Phúc qua đèo Mã Pí Lèng được hàng vạn thanh niên xung phong cùng đồng bào các dân tộc thiểu số xây dựng thủ công trong suốt 11 năm (1959-1965)."
+  },
+  "Đèo Mã Pí Lèng Hà Giang": {
+    "description": "Đèo Mã Pí Lèng mở ra khung cảnh hùng vĩ của núi non trùng điệp và dòng sông Nho Quế uốn lượn, mang đến một trải nghiệm lãng mạn khó quên giữa biển mây bồng bềnh. Với tiết trời nhiều mây, nơi đây càng thêm phần huyền ảo, lý tưởng cho những khoảnh khắc riêng tư và độc đáo giữa thiên nhiên hoang sơ.",
+    "fact": "Đèo Mã Pí Lèng là một phần của con đường Hạnh Phúc, được xây dựng thủ công bởi hàng vạn thanh niên xung phong, chủ yếu là người dân tộc thiểu số, trong gần 11 năm với dụng cụ thô sơ."
+  },
+  "Hồ Tràm Strip": {
+    "description": "Hồ Tràm Strip là tổ hợp nghỉ dưỡng và giải trí đẳng cấp quốc tế, mang đến trải nghiệm casino sôi động cùng các tiện ích sang trọng. Dù trời mưa và nhiệt độ ấm áp, du khách vẫn có thể tận hưởng không gian ấm cúng và đa dạng hoạt động trong nhà tại đây.",
+    "fact": "Hồ Tràm Strip là khu phức hợp nghỉ dưỡng đầu tiên tại Việt Nam được cấp phép hoạt động casino dành cho du khách quốc tế."
+  },
+  "Skylight Nha Trang": {
+    "description": "Skylight Nha Trang là một trong những quán bar rooftop nổi tiếng nhất thành phố, mang đến tầm nhìn panorama ngoạn mục. Dù trời mưa, không gian sang trọng và âm nhạc sôi động tại đây vẫn là điểm đến lý tưởng để du khách tận hưởng một buổi tối đáng nhớ.",
+    "fact": "Skylight Nha Trang nổi bật với Skywalk kính trong suốt, mang lại cảm giác lơ lửng giữa không trung cùng tầm nhìn 360 độ bao quát toàn cảnh thành phố và biển."
+  },
+  "Midori Park Bình Dương": {
+    "description": "Midori Park Bình Dương mang đến không gian xanh mát, lý tưởng cho những ai tìm kiếm sự yên bình và tĩnh lặng. Dù trời mưa, nơi đây vẫn giữ được nét quyến rũ riêng, mời gọi du khách đến thư giãn một mình.",
+    "fact": "Công viên được thiết kế theo phong cách Nhật Bản, mang đến không gian xanh hài hòa và tinh tế."
+  },
+  "Saigon Centre (Takashimaya)": {
+    "description": "Trong một ngày Sài Gòn mưa tầm tã, Saigon Centre (Takashimaya) mang đến không gian lý tưởng để du khách tìm kiếm sự thư giãn và trải nghiệm mua sắm cao cấp. Nơi đây quy tụ nhiều thương hiệu quốc tế, phù hợp cho những ai muốn khám phá và tận hưởng sự tiện nghi.",
+    "fact": "Takashimaya tại Saigon Centre là chi nhánh đầu tiên và duy nhất của chuỗi cửa hàng bách hóa cao cấp Nhật Bản này tại Việt Nam."
+  },
+  "Bưu điện Thành phố": {
+    "description": "Trong một buổi chiều mưa Sài Gòn, Bưu điện Thành phố là điểm dừng chân lý tưởng để du khách tìm kiếm sự tĩnh lặng, một mình chiêm ngưỡng kiến trúc Pháp cổ kính và dòng người qua lại. Nơi đây mang đến không gian hoài niệm giữa lòng Quận 1 nhộn nhịp.",
+    "fact": "Bưu điện Thành phố là một trong số ít công trình kiến trúc Pháp tại Việt Nam vẫn giữ nguyên công năng ban đầu và hoạt động liên tục từ khi khánh thành vào cuối thế kỷ 19."
+  },
+  "Chợ Bến Thành": {
+    "description": "Trong những ngày mưa nhiệt đới, Chợ Bến Thành vẫn rộn ràng và là điểm đến lý tưởng để du khách một mình thư thái khám phá văn hóa, ẩm thực và mua sắm ngay tại trung tâm Quận 1.",
+    "fact": "Chợ Bến Thành là một trong những công trình kiến trúc cổ nhất còn sót lại của Sài Gòn, được xây dựng từ năm 1914."
+  },
+  "Bảo tàng Áo Dài": {
+    "description": "Bảo tàng Áo Dài là điểm đến lý tưởng để khám phá vẻ đẹp vượt thời gian của trang phục truyền thống Việt Nam, đặc biệt phù hợp khi du khách tìm kiếm một không gian văn hóa mát mẻ tránh đi cái nắng mưa thất thường và nhiệt độ 32°C bên ngoài. Nơi đây trưng bày bộ sưu tập áo dài đa dạng qua các thời kỳ, mang đến cái nhìn sâu sắc về lịch sử và sự phát triển của biểu tượng văn hóa này.",
+    "fact": "Bảo tàng Áo Dài được thành lập bởi nhà thiết kế Sĩ Hoàng, người đã có nhiều đóng góp trong việc bảo tồn và phát triển áo dài Việt Nam."
+  },
+  "CGV Liberty Citypoint": {
+    "description": "CGV Liberty Citypoint là điểm đến lý tưởng cho nhóm bạn muốn thư giãn và tránh mưa tại Quận 1. Nơi đây mang đến trải nghiệm giải trí sống động với đa dạng các bộ phim mới nhất, phù hợp cho một buổi chiều chill cùng bạn bè.",
+    "fact": "CGV là chuỗi rạp chiếu phim Hàn Quốc đầu tiên mở rộng sang thị trường Việt Nam, đánh dấu sự phát triển mạnh mẽ của ngành công nghiệp điện ảnh nước này."
+  },
+  "CỘI Saigon": {
+    "description": "Giữa lòng Quận 1, CỘI Saigon mang đến không gian âm nhạc sống đầy ấm cúng, là lựa chọn lý tưởng cho các nhóm bạn tìm nơi chill thư giãn trong đêm mưa Sài Gòn.",
+    "fact": "CỘI Saigon nổi tiếng với việc biến tấu các ca khúc quen thuộc theo phong cách acoustic độc đáo, mang đến cảm xúc mới lạ cho người nghe."
+  },
+  "Bảo tàng Biệt động": {
+    "description": "Trong những ngày mưa và oi ả 31°C, Bảo tàng Biệt động là điểm đến lý tưởng để du khách tìm hiểu sâu sắc về những chiến công thầm lặng của lực lượng biệt động Sài Gòn, qua các hiện vật và câu chuyện đầy cảm hứng về lòng dũng cảm.",
+    "fact": "Bảo tàng Biệt động được đặt tại một ngôi nhà từng là hầm bí mật và nơi cất giấu vũ khí của lực lượng biệt động Sài Gòn trong chiến tranh."
+  },
+  "Saigon WaterBus": {
+    "description": "Saigon WaterBus mang đến trải nghiệm du ngoạn sông lãng mạn và kinh tế, lý tưởng cho các cặp đôi muốn tận hưởng khung cảnh thành phố từ một góc nhìn mới khi trời Sài Gòn nhiều mây. Đây là lựa chọn hoàn hảo để dạo chơi và tạo kỷ niệm đáng nhớ mà không tốn kém.",
+    "fact": "Saigon WaterBus là tuyến buýt đường sông công cộng đầu tiên tại TP.HCM, chính thức khai trương vào cuối năm 2017."
+  },
+  "CGV Landmark 81": {
+    "description": "Trong tiết trời mưa se lạnh, CGV Landmark 81 là điểm đến lý tưởng để tận hưởng những bộ phim bom tấn trong không gian sang trọng và ấm cúng, hoàn hảo cho những ai muốn thư giãn một mình. Nơi đây mang đến trải nghiệm điện ảnh đỉnh cao với chất lượng hình ảnh và âm thanh vượt trội.",
+    "fact": "CGV Landmark 81 là một trong những cụm rạp chiếu phim hiện đại và sang trọng bậc nhất Việt Nam, tọa lạc tại tòa nhà cao nhất cả nước."
+  },
+  "Landmark 81 SkyView": {
+    "description": "Giữa một buổi chiều mưa Sài Gòn, Landmark 81 SkyView mang đến một không gian lý tưởng để chiêm ngưỡng toàn cảnh thành phố từ trên cao, một trải nghiệm thư giãn và độc đáo cho những ai muốn tìm kiếm sự yên bình giữa lòng đô thị. Từ đây, du khách có thể ngắm nhìn đường chân trời của Quận 1 và các khu vực lân cận một cách trọn vẹn, bất kể thời tiết bên ngoài.",
+    "fact": "Đài quan sát Landmark 81 SkyView tọa lạc tại tầng 79, 80 và 81 của tòa nhà, nơi du khách có thể ngắm nhìn toàn cảnh thành phố từ độ cao gần 400 mét."
+  },
+  "The Factory Contemporary Arts Centre": {
+    "description": "The Factory Contemporary Arts Centre là điểm đến lý tưởng để trú mưa và một mình khám phá thế giới nghệ thuật đương đại đầy cảm hứng, mang đến những chiêm nghiệm sâu sắc trong không gian độc đáo.",
+    "fact": "Đây là trung tâm nghệ thuật đương đại được xây dựng có chủ đích đầu tiên tại Việt Nam."
+  },
+  "The Global City Canal of Love": {
+    "description": "Kênh Tình Yêu tại The Global City mang đến không gian lý tưởng cho các cặp đôi tận hưởng những buổi dạo bộ lãng mạn, với khung cảnh mặt nước êm đềm và kiến trúc hiện đại. Dưới tiết trời nhiều mây, đây là điểm đến hoàn hảo để cùng nhau trải nghiệm những khoảnh khắc yên bình và đáng nhớ.",
+    "fact": "Kênh Tình Yêu tại The Global City được thiết kế với chiều dài ấn tượng, tạo thành một trục cảnh quan xanh mát và điểm nhấn kiến trúc độc đáo trong khu đô thị."
+  },
+  "Đường sách Nguyễn Văn Bình": {
+    "description": "Giữa lòng Quận 1 sôi động, Đường sách Nguyễn Văn Bình là điểm hẹn lý tưởng cho các cặp đôi tìm kiếm không gian lãng mạn để dạo bước, cùng nhau khám phá những trang sách thú vị dưới tiết trời nhiều mây dễ chịu.",
+    "fact": "Đây là con đường sách chuyên biệt đầu tiên tại Việt Nam, chính thức khai trương vào năm 2016."
+  },
+  "Vinhomes Central Park": {
+    "description": "Vinhomes Central Park mang đến một không gian xanh mát và yên bình giữa lòng Sài Gòn sôi động, lý tưởng để tìm một góc riêng thư giãn. Giữa tiết trời nhiều mây, du khách có thể dạo bộ dọc bờ sông hay đơn giản là tìm một băng ghế để tận hưởng khoảnh khắc tĩnh lặng.",
+    "fact": "Công viên này sở hữu cột cờ cao nhất Việt Nam tại thời điểm khánh thành, nằm trong khuôn viên của tòa nhà Landmark 81."
+  },
+  "Khu du lịch Dìn Ký Lái Thiêu": {
+    "description": "Khu du lịch Dìn Ký Lái Thiêu là điểm đến lý tưởng cho những buổi hẹn hò lãng mạn, nơi du khách có thể tận hưởng ẩm thực sông nước ngon miệng và dạo bước trong không gian xanh mát, đặc biệt dễ chịu vào những ngày nhiều mây. Nơi đây mang đến trải nghiệm thư giãn với khung cảnh hữu tình và các món ăn đặc sắc.",
+    "fact": "Dìn Ký Lái Thiêu là một trong những khu du lịch sinh thái sông nước tiên phong tại Bình Dương, hình thành từ những năm đầu thập niên 2000."
+  },
+  "KDL Thủy Châu Bình Dương": {
+    "description": "Khu Du lịch Thủy Châu Bình Dương mang đến không gian xanh mát lý tưởng cho những buổi hẹn hò lãng mạn hay dạo chơi thư thái trong tiết trời dễ chịu. Du khách có thể tận hưởng ẩm thực đa dạng sau những giờ phút khám phá cảnh quan suối nhân tạo độc đáo.",
+    "fact": "Khu Du lịch Thủy Châu nổi bật với hệ thống suối và thác nước nhân tạo khổng lồ, mang đến trải nghiệm thiên nhiên giữa lòng đô thị."
+  },
+  "Chùa Bửu Phong Đồng Nai": {
+    "description": "Tọa lạc trên đỉnh núi Bửu Long, Chùa Bửu Phong mang đến một không gian tâm linh thanh tịnh và cổ kính, lý tưởng cho những ai tìm kiếm sự bình yên giữa tiết trời nhiều mây 28°C. Từ đây, du khách có thể phóng tầm mắt ngắm nhìn toàn cảnh thành phố Biên Hòa.",
+    "fact": "Chùa Bửu Phong là một trong những ngôi chùa cổ nhất ở Đồng Nai, với lịch sử hình thành từ thế kỷ 17."
+  },
+  "Chùa Bửu Long Đồng Nai": {
+    "description": "Chùa Bửu Long nổi bật với kiến trúc mang đậm phong cách Thái Lan, là điểm đến tâm linh thu hút du khách bởi vẻ đẹp uy nghiêm và thanh tịnh. Trong tiết trời nhiều mây 28°C, đây là dịp lý tưởng để du khách chiêm ngưỡng không gian kiến trúc độc đáo và tìm thấy sự bình yên.",
+    "fact": "Ngôi chùa này từng được tạp chí kiến trúc National Geographic của Mỹ bình chọn là một trong 10 công trình Phật giáo đẹp nhất thế giới."
+  },
+  "Chợ đêm Biên Hùng Đồng Nai": {
+    "description": "Chợ đêm Biên Hùng Đồng Nai là điểm đến lý tưởng cho những cặp đôi muốn thưởng thức ẩm thực đường phố đa dạng và dạo chơi thư thái trong tiết trời mát mẻ. Nơi đây hứa hẹn mang đến trải nghiệm khám phá văn hóa ẩm thực địa phương đầy sôi động.",
+    "fact": "Chợ đêm Biên Hùng nằm cạnh Hồ Biên Hùng, tạo nên không gian thoáng đãng và là một trong những khu chợ đêm lâu đời nhất tại thành phố Biên Hòa."
+  },
+  "Công viên Lê Văn Tám": {
+    "description": "Công viên Lê Văn Tám là một ốc đảo xanh mát giữa lòng Sài Gòn, mang đến không gian yên bình lý tưởng cho những ai muốn tìm một góc riêng để học tập hay thư giãn một mình.",
+    "fact": "Trước đây, khu vực này từng là Nghĩa trang Mạc Đĩnh Chi, một trong những nghĩa trang lớn nhất Sài Gòn."
+  },
+  "Hồ Con Rùa": {
+    "description": "Với không khí trong lành và không gian thoáng đãng giữa lòng đô thị, Hồ Con Rùa là điểm đến lý tưởng cho du khách tìm kiếm sự yên tĩnh để học tập hay đọc sách một mình dưới tiết trời nhiều mây mát mẻ.",
+    "fact": "Tên gọi Hồ Con Rùa xuất phát từ việc từng có một con rùa bằng đồng được đặt trên đỉnh tháp đài phun nước, mang ý nghĩa phong thủy tốt đẹp cho thành phố."
+  },
+  "Văn miếu Trấn Biên": {
+    "description": "Văn miếu Trấn Biên là điểm đến lý tưởng cho những ai tìm kiếm không gian yên bình để học tập hay suy ngẫm một mình, giữa khung cảnh kiến trúc truyền thống tĩnh lặng, đặc biệt phù hợp trong tiết trời nhiều mây dịu mát.",
+    "fact": "Văn miếu Trấn Biên được xây dựng vào năm 1715, là Văn miếu đầu tiên tại xứ Đàng Trong."
   }
 }

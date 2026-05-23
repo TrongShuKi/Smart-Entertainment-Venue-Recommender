@@ -11,15 +11,6 @@ FIXES so với v4:
   FIX-5  Bộ lọc giờ mở cửa: conditional theo flag check_open_time
          (trước đây luôn filter → loại 84% địa điểm khi tìm lúc tối)
   FIX-6  generate_recommendations: nhận check_open_time từ user_context
-
-Schema DB thực tế (đã confirm từ DB):
-    id, name, category, type, price, rating,
-    coords, tags, open_time (float), close_time (float), image_url, region
-
-    - "type"      : "outdoor" | "indoor" | "indoor_outdoor" |
-                    "indoor,outdoor" | "mixed" | "underground" | "outdoor,indoor"
-    - "tags"      : list[str] — gộp mood_tags + group_tags, toàn EN lowercase
-    - open/close  : float hour (0.0–23.99)
 """
 
 import logging
@@ -34,7 +25,7 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 STYLE_TAGS = {
-    # Phong cách không gian / thẩm mỹ
+    # Phong cách không gian / thẩm mỹ / kiến trúc / văn hóa
     "vintage", "luxury", "artistic", "historical", "cultural", "culture",
     "jazz", "rooftop", "acoustic", "minimalist", "cozy",
     "instagrammable", "scenic", "panoramic", "majestic", "nostalgic",
@@ -43,14 +34,13 @@ STYLE_TAGS = {
     "historic", "history",
 }
 
-# FIX-1: Bổ sung đầy đủ tất cả mood tags có trong DB thực tế
 MOOD_TAGS = {
     # Cảm giác / Trạng thái
     "chill", "relax", "relaxing", "romantic", "fun", "energetic",
     "lively", "bustling", "peaceful", "quiet", "healing", "wellness",
     "meditation", "spa", "resort", "cool", "cool_weather",
 
-    # Hoạt động ngoài trời
+    # Hoạt động ngoài trời / Thiên nhiên
     "adventure", "adventurous", "active", "hiking", "trekking",
     "cycling", "swimming", "camping", "picnic", "beach", "seaside",
     "snorkeling", "diving", "boating", "boat_trip", "sandboarding",
@@ -59,40 +49,31 @@ MOOD_TAGS = {
     "waterpark", "waterfall", "birdwatching", "wildlife",
     "cave_exploration", "cloud_hunting", "cloud_view",
 
-    # Văn hoá / Học thuật
-    "educational", "intellectual", "cultural", "culture", "history",
-    "historic", "historical", "spiritual", "solemn", "patriotic",
+    # Hoạt động / Trải nghiệm (Đã lọc các từ trùng với STYLE_TAGS)
+    "educational", "intellectual", "spiritual", "patriotic",
     "community", "local_experience", "local_food", "local_life",
     "countryside", "ecotourism", "eco", "biodiversity",
     "river_life", "sightseeing", "exploration", "explore",
 
-    # Ẩm thực / Giải trí
+    # Ẩm thực / Giải trí / Check-in
     "food", "foodie", "seafood", "beer", "shopping", "entertainment",
-    "nightlife", "party", "music", "jazz", "show", "gaming",
+    "nightlife", "party", "music", "show", "gaming",
     "animal_show", "folk_games", "festival", "interactive", "creative",
+    "photography", "photo", "checkin",
 
-    # Thiên nhiên / Cảnh quan
-    "nature", "green_space", "scenic", "panoramic", "majestic",
-    "mountain_view", "sunrise", "sunset", "night_view", "nightview",
-    "flower_field", "fruit_garden", "clear_water",
-
-    # Ảnh / Check-in
-    "photography", "photo", "checkin", "instagrammable",
-
-    # Nhóm / Gia đình
-    "family", "family_fun", "family_trip", "team_building",
-    "weekend", "weekend_getaway", "summer", "roadtrip",
+    # Cảnh quan
+    "nature", "green_space", "mountain_view", "sunrise", "sunset", 
+    "night_view", "nightview", "flower_field", "fruit_garden", "clear_water",
 
     # Misc
-    "emotional", "fantasy", "weird", "spectacular", "colorful",
-    "transit", "authentic", "mysterious", "nostalgic", "nostalgic",
+    "emotional", "fantasy", "weird", "spectacular", "transit",
 }
 
 # Group tags trong DB — loại ra khỏi mood/style scoring
 GROUP_TAGS_DB = {
-    "couple", "family", "friends", "solo", "kids", "children",
-    "teen", "teens", "student", "students", "elderly", "group",
-    "adventurers", "tourist", "foreigners", "business",
+    "adventurers", "business", "children", "couple", "elderly", 
+    "family", "foreigners", "friends", "group", "kids", 
+    "solo", "student", "students", "teen", "teens", "tourist"
 }
 
 # ============================================================================
@@ -127,6 +108,8 @@ NLP_TO_DB_ALIAS: Dict[str, Union[str, List[str]]] = {
     "đặc sản":         ["local_food", "authentic", "foodie"],
     "hải sản":         ["seafood", "food", "beach"],
     "đồ ăn ngon":      ["foodie", "food", "local_food"],
+    "ngon":            ["food", "foodie", "local_food"],
+    "quán ăn ngon":    ["food", "foodie"],
 
     # Thiên nhiên
     "thiên nhiên":     ["nature", "eco", "green_space", "peaceful"],
@@ -182,6 +165,21 @@ NLP_TO_DB_ALIAS: Dict[str, Union[str, List[str]]] = {
     "yoga":            ["meditation", "wellness", "peaceful"],
     "spa":             ["spa", "wellness", "relaxing"],
     "chữa lành":       ["healing", "wellness", "peaceful", "nature"],
+
+    # HỌC TẬP/LÀM VIỆC:
+    "học bài":          ["quiet", "student", "cozy", "chill"],
+    "làm việc":         ["quiet", "business", "minimalist", "peaceful"],
+    "chạy deadline":    ["quiet", "student", "business", "chill"],
+    "đọc sách":         ["quiet", "peaceful", "intellectual", "cozy"],
+
+    # Hoạt dộng
+    "đi dạo":          ["walk", "walking", "chill", "peaceful"],
+    "đi dạo phố":      ["walk", "walking", "chill", "peaceful"],
+    "đi bộ":           ["walk", "walking", "active"],
+    "dạo phố":         ["walk", "walking", "chill", "sightseeing"],
+    "tản bộ":          ["walk", "walking", "relax"],
+    "hóng gió":        ["chill", "relax", "scenic"],
+    "ngắm cảnh":       ["scenic", "sightseeing", "panoramic"],
 
     # Địa phương
     "bình dân":        ["local_experience", "local_food", "authentic"],
@@ -362,7 +360,7 @@ class RecommenderEngine:
             "weather_rules": {
                 "bad_weather_statuses": ["RAIN", "STORM", "DRIZZLE"],
             },
-            "max_results": 3,
+            "max_results": 5,
         }
 
     @staticmethod

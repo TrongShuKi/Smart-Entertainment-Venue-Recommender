@@ -1,4 +1,4 @@
-  /* ═══════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
      UTILITIES
   ═══════════════════════════════════════════════════════════ */
   const $ = (sel, ctx = document) => ctx.querySelector(sel);
@@ -19,7 +19,7 @@
     window.scrollTo({ top: y, behavior: 'smooth' });
   }
 
-  // Favorites theo từng user (uid) — guest không lưu persistent
+  // Favorites helpers — localStorage chỉ làm fallback cache
   function _favKey() {
     return APP_STATE.user?.uid ? 'st_fav_' + APP_STATE.user.uid : null;
   }
@@ -28,14 +28,18 @@
     if (!key) return;
     try { localStorage.setItem(key, JSON.stringify(APP_STATE.favorites)); } catch(e) {}
   }
-  function loadFavorites() {
+  // Alias dùng bởi Favorites.load() khi Firestore fail
+  function loadFavoritesLocal() {
     const key = _favKey();
     if (!key) { APP_STATE.favorites = []; return; }
     try {
       const raw = localStorage.getItem(key);
       APP_STATE.favorites = raw ? JSON.parse(raw) : [];
     } catch(e) { APP_STATE.favorites = []; }
+    SidePanel.render();
   }
+  // Giữ tên cũ để không break code nào còn dùng
+  function loadFavorites() { loadFavoritesLocal(); }
 
   // Weather icon map
   const WEATHER_ICONS = {
@@ -62,4 +66,3 @@
     const activeLink = $(current);
     if (activeLink) activeLink.classList.add('active');
   }
-

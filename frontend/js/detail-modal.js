@@ -1,53 +1,55 @@
-  /* ═══════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
    DETAIL MODAL — Phần 3
   ═══════════════════════════════════════════════════════════ */
-var DetailModal = {
+  var DetailModal = {
     _miniMap: null,
     _currentPlace: null,
     _MEDALS: ['🥇', '🥈', '🥉'],
 
-    open(data) {
-        let place;
-        let index = -1;
+    open(indexOrPlace) {
+      // Chấp nhận cả index (từ Discovery) lẫn place object (từ SidePanel/Favorites)
+      let place, index;
 
-        if (typeof data === 'object' && data !== null) {
-            place = data;
-        } else {
-            index = data;
-            place = APP_STATE.places[index];
-        }
+      if (typeof indexOrPlace === 'number') {
+        // Gọi từ Discovery/DecisionHub — dùng index vào APP_STATE.places
+        index = indexOrPlace;
+        place = APP_STATE.places[index];
+      } else if (indexOrPlace && typeof indexOrPlace === 'object') {
+        // Gọi từ SidePanel — place object truyền trực tiếp
+        place = indexOrPlace;
+        // Tìm index trong APP_STATE.places để lấy medal đúng (nếu có)
+        index = APP_STATE.places.findIndex(p => String(p.id) === String(place.id));
+        if (index === -1) index = 0; // fallback: dùng medal 🥇 nếu không tìm thấy
+      }
 
-        if (!place) {
-            console.warn("DetailModal.open(): Dữ liệu place rỗng.");
-            return;
-        }
+      if (!place) return;
+      this._currentPlace = place;
 
-        this._currentPlace = place;
-        this._populate(place, index);
+      this._populate(place, index);
+      document.getElementById('detail-modal').classList.add('open');
+      document.body.style.overflow = 'hidden';
 
-        document.getElementById('detail-modal').classList.add('open');
-        document.body.style.overflow = 'hidden';
+      // Init mini-map after modal visible
+      setTimeout(() => this._initMiniMap(place), 120);
 
-        setTimeout(() => this._initMiniMap(place), 120);
-
-        this._boundOnKey = this._onKey.bind(this);
-        document.addEventListener('keydown', this._boundOnKey);
+      // Keyboard close
+      document.addEventListener('keydown', this._onKey);
     },
 
     close() {
-        document.getElementById('detail-modal').classList.remove('open');
-        document.body.style.overflow = '';
-        if (this._boundOnKey) {
-            document.removeEventListener('keydown', this._boundOnKey);
-        }
+      document.getElementById('detail-modal').classList.remove('open');
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', this._onKey);
 
-        if (this._miniMap) {
-            this._miniMap.remove();
-            this._miniMap = null;
-        }
+      // Destroy mini-map so it re-inits cleanly next time
+      if (this._miniMap) {
+        this._miniMap.remove();
+        this._miniMap = null;
+      }
     },
 
-    _onKey(e) { if (e.key === 'Escape') this.close(); },
+    _onKey(e) { if (e.key === 'Escape') DetailModal.close(); },
+
     _populate(place, index) {
       const set = (id, val) => {
         const el = document.getElementById(id);
@@ -210,4 +212,3 @@ var DetailModal = {
       this._bindEvents();
     },
   };
-

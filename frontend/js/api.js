@@ -1,4 +1,4 @@
-  /* ═══════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
      API CLIENT — mirrors api_client.py
   ═══════════════════════════════════════════════════════════ */
   const API = {
@@ -36,6 +36,18 @@
       return res.json();
     },
 
+    async delete(path, auth = false) {
+      const res = await fetch(this.base + path, {
+        method: 'DELETE',
+        headers: this.headers(auth),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || `HTTP ${res.status}`);
+      }
+      return res.json();
+    },
+
     async login(email, password) {
       return this.post('/auth/login', { email, password });
     },
@@ -56,4 +68,3 @@
       return this.get('/health');
     },
   };
-

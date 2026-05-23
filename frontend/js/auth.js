@@ -1,40 +1,39 @@
-  /* ═══════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
      AUTH MANAGER
   ═══════════════════════════════════════════════════════════ */
   const Auth = {
     login(userData) {
       APP_STATE.user = userData;
       APP_STATE.isGuest = false;
-      loadFavorites();            // load favorites của user này từ localStorage
       this._updateUI();
       this._persistSession(userData);
+      Favorites.load();           // load từ Firestore (async, không block)
       showToast(`Chào mừng, ${userData.email}!`, 'success');
     },
 
     logout() {
-      APP_STATE.user        = null;
-      APP_STATE.isGuest     = true;
-      APP_STATE.favorites   = [];
-      APP_STATE.places      = [];
-      APP_STATE.results     = null;
+      APP_STATE.user            = null;
+      APP_STATE.isGuest         = true;
+      APP_STATE.places          = [];
+      APP_STATE.results         = null;
       APP_STATE.contextSummary  = '';
       APP_STATE.resultsRevealed = false;
+
+      Favorites.clear();
 
       // Ẩn Tầng 2 & 3, reset nội dung
       const disc = document.getElementById('section-discovery');
       const dec  = document.getElementById('section-decision');
       if (disc) { disc.classList.remove('revealed'); disc.innerHTML = ''; }
       if (dec)  dec.classList.remove('revealed');
-
-      // Scroll về đầu trang
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-
+      
       // Clear content ô tìm kiếm
       const searchInput = document.getElementById('main-search-input');
       if (searchInput) { searchInput.value = '';}
 
       this._updateUI();
       localStorage.removeItem('st_session');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       showToast('Đã đăng xuất', 'success', 2000);
     },
 
@@ -50,8 +49,8 @@
           if (data?.idToken) {
             APP_STATE.user = data;
             APP_STATE.isGuest = false;
-            loadFavorites();      // load favorites của user này
             this._updateUI();
+            Favorites.load();     // load từ Firestore
             return true;
           }
         }
@@ -63,8 +62,7 @@
       const loggedIn = !APP_STATE.isGuest;
 
       // Guest elements — chỉ hiện khi chưa đăng nhập
-      const guestEls = ['nav-guest-tag', 'nav-login-btn'];
-      guestEls.forEach(id => {
+      ['nav-guest-tag', 'nav-login-btn'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = loggedIn ? 'none' : '';
       });
@@ -79,12 +77,8 @@
         if (emailEl) emailEl.textContent = APP_STATE.user.email || '';
         if (nameEl)  nameEl.textContent  = (APP_STATE.user.email || '').split('@')[0];
       }
-        const badge = document.getElementById('fav-badge');
-      if (badge && !loggedIn) {
-          badge.classList.remove('visible');
-      }
-      
-      // Update side panel
+
+      // Update side panel (sẽ tự update badge bên trong)
       SidePanel.render();
     },
   };
@@ -139,7 +133,6 @@
         this.close();
       } catch(err) {
         errEl.textContent = '✕ Sai email hoặc mật khẩu. Thử lại nhé!';
-        // Shake animation
         const box = btn.closest('.modal-box');
         if (box) { box.style.animation = 'shake 0.3s ease'; setTimeout(() => box.style.animation = '', 300); }
       } finally {
@@ -189,4 +182,3 @@
       }
     },
   };
-

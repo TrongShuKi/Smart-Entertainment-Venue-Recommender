@@ -270,5 +270,57 @@
   "Nhà Văn hóa Sinh viên TP.HCM": {
     "description": "Nhà Văn hóa Sinh viên TP.HCM tại Dĩ An là điểm đến lý tưởng cho các nhóm bạn tìm kiếm không gian sôi động để vui chơi và tham gia các hoạt động văn hóa đa dạng, đặc biệt phù hợp để tránh nắng nóng vào một ngày nhiều mây. Nơi đây mang đến nhiều lựa chọn giải trí và học tập cho giới trẻ.",
     "fact": "Đây là một trong những công trình văn hóa sinh viên lớn nhất và hiện đại nhất khu vực phía Nam, được thiết kế với nhiều hạng mục phục vụ đa dạng nhu cầu của giới trẻ."
+  },
+  "Chợ Thủ Đức": {
+    "description": "Dù trời mưa, Chợ Thủ Đức vẫn là điểm đến lý tưởng cho nhóm bạn muốn khám phá văn hóa địa phương và thưởng thức ẩm thực đường phố đa dạng. Nằm không xa khu vực Dĩ An, nơi đây mang đến trải nghiệm mua sắm và ăn uống nhộn nhịp, tránh được cái nắng mưa thất thường.",
+    "fact": "Chợ Thủ Đức là một trong những chợ truyền thống có lịch sử lâu đời, đóng vai trò trung tâm giao thương sầm uất cho khu vực phía Đông Sài Gòn từ hàng chục năm qua."
+  },
+  "Nhà điều hành Đại học Quốc gia TP.HCM": {
+    "description": "Nằm trong khuôn viên Đại học Quốc gia TP.HCM, Nhà điều hành là trung tâm hành chính và thường là điểm hẹn quen thuộc của sinh viên, mang đến một không gian rộng rãi để trú mưa và khám phá cuộc sống học đường sôi động cùng nhóm bạn.",
+    "fact": "Tòa nhà điều hành là trung tâm đầu não của Đại học Quốc gia TP.HCM, nơi điều phối hoạt động của hệ thống đại học đa ngành, đa lĩnh vực lớn nhất Việt Nam với hàng chục đơn vị thành viên."
+  },
+  "Quảng trường Đại học Quốc gia TP.HCM": {
+    "description": "Quảng trường Đại học Quốc gia TP.HCM mang đến không gian rộng lớn, lý tưởng cho các nhóm bạn muốn tụ tập và thưởng thức ẩm thực sinh viên phong phú, giá cả phải chăng. Với ngân sách dưới 100,000đ, du khách dễ dàng tìm thấy vô vàn lựa chọn ăn uống ngon miệng quanh khu vực này.",
+    "fact": "Nơi đây là trái tim của Làng Đại học Quốc gia TP.HCM, thường xuyên tổ chức các sự kiện văn hóa, thể thao quy mô lớn thu hút hàng ngàn sinh viên."
+  },
+  "Công viên Lịch sử Văn hóa Dân tộc": {
+    "description": "Công viên Lịch sử Văn hóa Dân tộc là điểm đến lý tưởng cho những ai muốn khám phá di tích lịch sử và văn hóa phong phú, mang đến trải nghiệm tham quan độc đáo với không gian xanh mát. Du khách có thể dễ dàng dành trọn một ngày để tìm hiểu về các công trình kiến trúc và tái hiện lịch sử hào hùng của dân tộc Việt Nam.",
+    "fact": "Nơi đây được quy hoạch với diện tích lên đến 400 ha, bao gồm nhiều khu vực tái hiện các công trình kiến trúc cổ và hiện đại, cùng với các đền thờ và bảo tàng."
+  },
+  "Đền Hùng Thủ Đức": {
+    "description": "Đền Hùng Thủ Đức là một công trình kiến trúc uy nghiêm, tái hiện không gian thờ tự các vị Vua Hùng, mang đến cho du khách cơ hội tìm hiểu sâu sắc về cội nguồn lịch sử và văn hóa dân tộc. Đây là điểm đến lý tưởng để khám phá di sản Việt Nam ngay tại lòng thành phố.",
+    "fact": "Đền Hùng Thủ Đức được xây dựng vào năm 1992, là phiên bản thu nhỏ của Đền Hùng gốc tại Phú Thọ, giúp người dân miền Nam có thể tưởng nhớ công ơn các Vua Hùng."
+  },
+  "Bảo tàng Lịch sử Thành phố Hồ Chí Minh - cơ sở Thủ Đức": {
+    "description": "Dành cho những ai yêu thích khám phá di sản và văn hóa, Bảo tàng Lịch sử Thành phố Hồ Chí Minh - cơ sở Thủ Đức mang đến một hành trình độc đáo qua các giai đoạn phát triển của vùng đất phương Nam. Đây là điểm đến lý tưởng để tìm hiểu sâu hơn về lịch sử, đặc biệt trong một ngày trời nhiều mây, giúp du khách thoải mái tận hưởng không gian trưng bày.",
+    "fact": "Bảo tàng Lịch sử Thành phố Hồ Chí Minh, với cơ sở chính được xây dựng từ năm 1929, là một trong những nơi lưu giữ bộ sưu tập cổ vật phong phú nhất về lịch sử và văn hóa Việt Nam tại khu vực phía Nam."
+  },
+  "Bưu điện Thành phố Hồ Chí Minh": {
+    "description": "Bưu điện Thành phố Hồ Chí Minh là công trình kiến trúc Pháp cổ kính, mang đậm dấu ấn lịch sử giữa lòng Quận 1 sôi động. Đây là điểm đến lý tưởng để du khách khám phá văn hóa và kiến trúc độc đáo, đặc biệt trong một ngày trời nhiều mây.",
+    "fact": "Đây là một trong những bưu điện vẫn còn hoạt động lâu đời nhất tại Việt Nam, phục vụ người dân và du khách liên tục từ cuối thế kỷ 19."
+  },
+  "Khu du lịch Suối Tiên": {
+    "description": "Khu du lịch Suối Tiên là điểm đến lý tưởng cho các nhóm bạn tìm kiếm trải nghiệm giải trí đa dạng, từ công viên nước đến các trò chơi cảm giác mạnh. Với thời tiết nhiều mây và nhiệt độ 29°C, đây là điều kiện thuận lợi để khám phá trọn vẹn khu vui chơi đầy sắc màu này.",
+    "fact": "Khu du lịch Suối Tiên nổi tiếng với kiến trúc độc đáo lấy cảm hứng từ truyền thuyết và văn hóa Việt Nam, đặc biệt là các câu chuyện về Lạc Long Quân - Âu Cơ và Tứ Linh."
+  },
+  "Nhà Văn hóa Thủ Đức": {
+    "description": "Trong những ngày mưa, Nhà Văn hóa Thủ Đức là lựa chọn lý tưởng cho nhóm bạn tìm kiếm không gian sinh hoạt và giải trí văn hóa. Nơi đây thường xuyên tổ chức các sự kiện cộng đồng, mang đến cơ hội khám phá những nét đẹp văn hóa địa phương.",
+    "fact": "Với lịch sử hoạt động lâu đời, Nhà Văn hóa Thủ Đức không chỉ là nơi tổ chức sự kiện mà còn là cái nôi nuôi dưỡng nhiều tài năng nghệ thuật địa phương, từ ca hát, múa đến võ thuật."
+  },
+  "Đại học Quốc gia TP.HCM": {
+    "description": "Đại học Quốc gia TP.HCM là một quần thể giáo dục và nghiên cứu hàng đầu tại Việt Nam, nổi bật với khuôn viên rộng lớn và không gian xanh mát, tạo nên một môi trường học thuật sôi động. Nơi đây là điểm đến lý tưởng để khám phá kiến trúc hiện đại và cảm nhận nhịp sống của sinh viên, ngay cả trong tiết trời 34°C và nhiều mây.",
+    "fact": "Với diện tích rộng lớn 643.7 ha, khuôn viên của Đại học Quốc gia TP.HCM trải dài trên địa bàn TP.HCM và tỉnh Bình Dương, là một trong những quần thể đại học lớn nhất khu vực."
+  },
+  "Công viên Lê Thị Riêng": {
+    "description": "Công viên Lê Thị Riêng là một ốc đảo xanh rộng lớn giữa lòng Quận 10, nơi các nhóm bạn có thể tìm thấy không gian lý tưởng để tụ tập, ăn uống và trò chuyện vui vẻ với chi phí phải chăng. Đây là điểm đến phù hợp cho những buổi gặp gỡ thân mật, đặc biệt khi muốn tránh xa sự ồn ào của phố thị.",
+    "fact": "Trước đây, công viên Lê Thị Riêng từng là khu nghĩa địa Chí Hòa nổi tiếng."
+  },
+  "Sân bóng mini Thành Thái": {
+    "description": "Sân bóng mini Thành Thái là lựa chọn hoàn hảo cho các nhóm bạn muốn tìm một địa điểm sôi động để rèn luyện thể thao tại Quận 10. Sau những giờ phút vận động, khu vực xung quanh cũng có nhiều quán ăn bình dân, phù hợp cho buổi tụ tập bạn bè với ngân sách phải chăng.",
+    "fact": "Bóng đá mini 5 người là hình thức thể thao phổ biến nhất tại Việt Nam, thu hút hàng triệu người chơi tham gia rèn luyện sức khỏe và giải trí hàng tuần."
+  },
+  "Khu Dương Tử Giang": {
+    "description": "Khu Dương Tử Giang tại Quận 10 là điểm hẹn ẩm thực đường phố sôi động, nơi các nhóm bạn có thể dễ dàng tìm thấy vô vàn món ăn vặt và bữa chính hấp dẫn với mức giá phải chăng, hoàn hảo cho ngân sách dưới 100,000đ.",
+    "fact": "Dù không quá dài, Khu Dương Tử Giang lại nổi tiếng với mật độ dày đặc các hàng quán ăn uống đa dạng, tạo nên một 'mê cung' ẩm thực đường phố sôi động."
   }
 }

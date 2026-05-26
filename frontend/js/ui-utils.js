@@ -60,7 +60,7 @@
     let current = sections[0].link;
     sections.forEach(({ id, link }) => {
       const el = document.getElementById(id);
-      if (el && el.style.display !== 'none' && el.offsetTop <= scrollY) current = link;
+      if (el && el.classList.contains('revealed') && el.offsetTop <= scrollY) current = link;
     });
     $$('.nav-links a').forEach(a => a.classList.remove('active'));
     const activeLink = $(current);

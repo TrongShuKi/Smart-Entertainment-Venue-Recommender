@@ -202,5 +202,41 @@
   "Công viên Sakura Vinhomes Grand Park": {
     "description": "Công viên Sakura tại Vinhomes Grand Park là điểm đến lý tưởng để nhóm bạn cùng nhau thư giãn, tận hưởng không gian xanh mát và chiêm ngưỡng vẻ đẹp kiến trúc Nhật Bản độc đáo. Với những con đường rợp bóng cây và hồ nước yên bình, nơi đây mang đến trải nghiệm \"chill\" đầy cuốn hút.",
     "fact": "Công viên Sakura là một trong những công viên chủ đề Nhật Bản lớn nhất tại Việt Nam, mang đến trải nghiệm văn hóa độc đáo giữa lòng Sài Gòn."
+  },
+  "Khu cà phê ven sông The Deck": {
+    "description": "Khu cà phê ven sông The Deck là lựa chọn hoàn hảo cho nhóm bạn muốn tìm một không gian ẩm thực trong nhà thoải mái để tránh mưa và cái nóng 34°C. Tại đây, du khách có thể thưởng thức đa dạng món ngon trong không gian ấm cúng, nhìn ra bờ sông.",
+    "fact": "The Deck được thiết kế với không gian mở, cho phép du khách thưởng thức tầm nhìn ra sông dù đang ở bên trong."
+  },
+  "Pizza 4P's Lê Thánh Tôn": {
+    "description": "Trong tiết trời mưa và nóng bức, Pizza 4P's Lê Thánh Tôn mang đến không gian ấm cúng, lý tưởng để thưởng thức pizza cùng bạn bè. Nơi đây nổi tiếng với phong cách ẩm thực Nhật Bản kết hợp Ý độc đáo và nguyên liệu tươi ngon.",
+    "fact": "Pizza 4P's được thành lập bởi hai người Nhật Bản, Yosuke Masuko và Sanae Masuko, với triết lý 'Delivering Wow, Sharing Happiness' và ý nghĩa 'For Peace'."
+  },
+  "Khu cà phê acoustic No Stress": {
+    "description": "Khu cà phê acoustic No Stress mang đến không gian xanh mát lý tưởng cho những ai muốn tìm một góc riêng để thư giãn, ngắm cảnh trong tiết trời nhiều mây. Du khách có thể tận hưởng sự yên bình và lắng nghe những giai điệu acoustic nhẹ nhàng giữa lòng Dĩ An.",
+    "fact": "Tên gọi 'No Stress' được lấy cảm hứng từ mong muốn tạo ra một không gian hoàn toàn thư giãn, tách biệt khỏi sự ồn ào của đô thị."
+  },
+  "Sân trượt skateboard Thảo Điền": {
+    "description": "Sân trượt skateboard Thảo Điền mang đến không gian năng động, nơi du khách có thể thư thái dạo bước và ngắm nhìn những màn trình diễn skateboard điêu luyện. Trong một ngày nhiều mây, đây là lựa chọn lý tưởng để tận hưởng không khí trẻ trung và tìm kiếm nguồn cảm hứng mới.",
+    "fact": "Thảo Điền được biết đến là một trong những khu vực tiên phong phát triển văn hóa skateboard tại TP.HCM, thu hút cộng đồng trẻ đam mê bộ môn thể thao đường phố này."
+  },
+  "Khu xe điện trẻ em Sala": {
+    "description": "Khu xe điện trẻ em Sala là một phần của công viên đô thị, mang đến không gian xanh mát lý tưởng cho những ai muốn tản bộ và ngắm cảnh. Dù trời nhiều mây, nơi đây vẫn là điểm đến thư thái để du khách tận hưởng khoảnh khắc bình yên một mình.",
+    "fact": "Đây là một trong số ít công viên đô thị tại Dĩ An tích hợp khu vui chơi xe điện chuyên biệt dành cho trẻ em."
+  },
+  "Khu foodcourt Grand Park": {
+    "description": "Giữa không gian xanh mát của Grand Park, khu foodcourt là điểm dừng chân lý tưởng để du khách một mình thư thái dạo bước, thưởng thức ẩm thực và chiêm ngưỡng cảnh quan trong tiết trời nhiều mây dễ chịu. Đây là nơi hoàn hảo để tìm kiếm sự yên bình và nạp lại năng lượng.",
+    "fact": "Khu foodcourt này được thiết kế với không gian mở, tận dụng tối đa ánh sáng tự nhiên và tầm nhìn ra công viên, tạo cảm giác thoáng đãng và gần gũi với thiên nhiên."
+  },
+  "Vạn Phúc Water Show": {
+    "description": "Vạn Phúc Water Show mang đến những màn trình diễn nhạc nước sống động, kết hợp ánh sáng và hiệu ứng đầy mê hoặc, tạo nên không gian lý tưởng để khách tham quan dạo bước và thưởng ngoạn cảnh đẹp trong buổi tối. Đây là điểm đến giải trí ấn tượng, phù hợp cho những ai muốn tìm kiếm trải nghiệm nghệ thuật độc đáo.",
+    "fact": "Vạn Phúc Water Show nổi bật với hệ thống đài phun nước hiện đại, có khả năng trình diễn hàng nghìn hiệu ứng nước khác nhau, tạo nên một bữa tiệc âm thanh và ánh sáng hoành tráng."
+  },
+  "Khu du lịch Bình Quới 1": {
+    "description": "Khu du lịch Bình Quới 1 là một ốc đảo xanh mát giữa lòng thành phố, nơi du khách có thể tìm thấy sự bình yên để tản bộ và chiêm ngưỡng cảnh quan sông nước hữu tình. Với tiết trời nhiều mây và nhiệt độ dễ chịu, đây là điểm đến lý tưởng cho những khoảnh khắc thư giãn riêng tư.",
+    "fact": "Nơi đây nổi tiếng với không gian tái hiện làng quê Nam Bộ xưa và các món ăn dân dã đặc trưng."
+  },
+  "Chùa Bửu Long Thủ Đức": {
+    "description": "Chùa Bửu Long nổi bật với kiến trúc Thái Lan độc đáo và tháp Gotama Cetiya sừng sững, mang đến một không gian thanh tịnh giữa lòng Sài Gòn. Trong tiết trời nhiều mây 29°C, du khách có thể tận hưởng sự mát mẻ và yên bình khi chiêm ngưỡng vẻ đẹp uy nghi của ngôi chùa.",
+    "fact": "Chùa Bửu Long được xây dựng theo lối kiến trúc Phật giáo Nguyên thủy của Thái Lan, với tháp chính Gotama Cetiya cao 56 mét, từng lọt top 10 ngôi chùa đẹp nhất thế giới do tạp chí National Geographic bình chọn."
   }
 }

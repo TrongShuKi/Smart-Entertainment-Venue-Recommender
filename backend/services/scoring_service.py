@@ -184,6 +184,12 @@ NLP_TO_DB_ALIAS: Dict[str, Union[str, List[str]]] = {
     "ngắm cảnh":       ["scenic", "sightseeing", "panoramic", "nature"],
     "ngắm cảnh đẹp":   ["scenic", "sightseeing", "panoramic", "instagrammable"],
 
+    # Nhóm Đi chơi / Giải trí chung chung
+    "đi chơi":  ["fun", "entertainment", "chill", "explore"],
+    "chơi":     ["fun", "entertainment", "lively"],
+    "đi lượn":  ["chill", "walk", "sightseeing"],
+    "đi quẩy":  ["party", "nightlife", "lively", "energetic"],
+
     # Địa phương
     "bình dân":        ["local_experience", "local_food", "authentic"],
     "địa phương":      ["local_experience", "local_food", "local_life"],

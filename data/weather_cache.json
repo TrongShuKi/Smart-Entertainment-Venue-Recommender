@@ -1,18 +1,42 @@
 {
   "10.7769,106.7009": {
-    "ts": 1779037808.5811253,
+    "ts": 1779815907.9815626,
     "data": {
       "weatherCondition": "CLOUDS",
-      "temperature": 28.66,
-      "rainProbability": 0.2
+      "temperature": 30.06,
+      "rainProbability": 0.09
     }
   },
   "Ho Chi Minh City": {
-    "ts": 1779035413.0868628,
+    "ts": 1779815958.0147345,
     "data": {
       "weatherCondition": "CLOUDS",
-      "temperature": 28.81,
-      "rainProbability": 0.2
+      "temperature": 30.06,
+      "rainProbability": 0.09
+    }
+  },
+  "Thủ Đức": {
+    "ts": 1779797988.5683331,
+    "data": {
+      "weatherCondition": "CLOUDS",
+      "temperature": 29.87,
+      "rainProbability": 0.14
+    }
+  },
+  "Dĩ An": {
+    "ts": 1779800105.967822,
+    "data": {
+      "weatherCondition": "RAIN",
+      "temperature": 28.2,
+      "rainProbability": 0.42
+    }
+  },
+  "Quận 1": {
+    "ts": 1779813349.2784238,
+    "data": {
+      "weatherCondition": "CLOUDS",
+      "temperature": 30.24,
+      "rainProbability": 0.09
     }
   }
 }

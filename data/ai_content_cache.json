@@ -238,5 +238,21 @@
   "Chùa Bửu Long Thủ Đức": {
     "description": "Chùa Bửu Long nổi bật với kiến trúc Thái Lan độc đáo và tháp Gotama Cetiya sừng sững, mang đến một không gian thanh tịnh giữa lòng Sài Gòn. Trong tiết trời nhiều mây 29°C, du khách có thể tận hưởng sự mát mẻ và yên bình khi chiêm ngưỡng vẻ đẹp uy nghi của ngôi chùa.",
     "fact": "Chùa Bửu Long được xây dựng theo lối kiến trúc Phật giáo Nguyên thủy của Thái Lan, với tháp chính Gotama Cetiya cao 56 mét, từng lọt top 10 ngôi chùa đẹp nhất thế giới do tạp chí National Geographic bình chọn."
+  },
+  "Gigamall": {
+    "description": "Gigamall là một trung tâm thương mại hiện đại với kiến trúc độc đáo, mang đến trải nghiệm mua sắm, ẩm thực và giải trí đa dạng. Nơi đây là điểm đến lý tưởng để khám phá các xu hướng mới và tận hưởng không gian thư giãn.",
+    "fact": "Gigamall là trung tâm thương mại đầu tiên tại Việt Nam áp dụng mô hình \"Art-Tech\" kết hợp nghệ thuật và công nghệ hiện đại."
+  },
+  "Nhà thờ Đức Bà": {
+    "description": "Nhà thờ Đức Bà Sài Gòn là một biểu tượng kiến trúc Pháp cổ kính, thu hút du khách bởi vẻ đẹp vượt thời gian và giá trị lịch sử sâu sắc. Đây là điểm đến lý tưởng cho những ai muốn khám phá văn hóa và di sản tại trung tâm Quận 1 mà không tốn phí.",
+    "fact": "Toàn bộ gạch dùng để xây Nhà thờ Đức Bà đều được vận chuyển từ Marseille, Pháp, và vẫn giữ màu sắc nguyên bản sau hơn một thế kỷ."
+  },
+  "Khu Du Lịch Thủy Châu Bình Dương": {
+    "description": "Khu Du Lịch Thủy Châu Bình Dương mang đến không gian vui chơi giải trí mát mẻ, lý tưởng cho những ai đang tìm kiếm trải nghiệm sảng khoái vào một ngày mưa. Nơi đây sở hữu dòng suối nhân tạo cùng hồ bơi rộng lớn, hứa hẹn những giờ phút thư giãn và khám phá thiên nhiên gần gũi.",
+    "fact": "Khu Du Lịch Thủy Châu nổi tiếng với hệ thống suối, thác nhân tạo được xây dựng công phu, tái hiện khung cảnh thiên nhiên hùng vĩ ngay giữa lòng Bình Dương."
+  },
+  "Làng Đại học Quốc gia": {
+    "description": "Trong tiết trời nắng đẹp, Làng Đại học Quốc gia hiện lên như một ốc đảo xanh mát giữa lòng Dĩ An, lý tưởng cho những ai muốn tản bộ một mình và tận hưởng không gian yên bình. Nơi đây mang đến khung cảnh thoáng đãng với nhiều cây xanh, hồ nước và kiến trúc hiện đại, rất phù hợp để ngắm cảnh và thư giãn.",
+    "fact": "Làng Đại học Quốc gia Thành phố Hồ Chí Minh là một trong những khu đô thị đại học lớn nhất cả nước, quy tụ nhiều trường đại học hàng đầu Việt Nam với tổng diện tích lên đến hơn 643 ha."
   }
 }

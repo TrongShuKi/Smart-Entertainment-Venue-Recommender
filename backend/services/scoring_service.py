@@ -344,7 +344,7 @@ class RecommenderEngine:
             "weights": {
                 "style":          2.0,
                 "mood":           1.0,
-                "distance":      -0.15,
+                "distance":      -0.5,
                 "location_boost": 2.0,
             },
             "weather_rules": {

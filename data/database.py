@@ -149,7 +149,8 @@ def build_database() -> None:
         )
 
     print(f"[INFO] Đọc Excel: {_EXCEL_FILE}")
-    df = pd.read_excel(_EXCEL_FILE, sheet_name="Sheet1")
+    df = pd.read_excel(_EXCEL_FILE, sheet_name="rawdata")
+    df.columns = df.columns.str.strip() 
     print(f"[INFO] Số dòng gốc: {len(df)}")
 
     for col in df.columns:

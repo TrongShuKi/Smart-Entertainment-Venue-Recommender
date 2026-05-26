@@ -128,9 +128,17 @@ NLP_TO_DB_ALIAS: Dict[str, Union[str, List[str]]] = {
     # Văn hoá / Lịch sử
     "học hỏi":         ["educational", "cultural", "historical", "history"],
     "văn hoá":         ["cultural", "culture", "historical", "authentic"],
+    "văn hóa":         ["cultural", "culture", "historical", "authentic"], 
     "lịch sử":         ["historical", "history", "historic", "cultural"],
     "tâm linh":        ["spiritual", "solemn", "meditation"],
     "nghệ thuật":      ["artistic", "creative", "cultural", "instagrammable"],
+    "di tích":         ["historical", "history", "historic"],
+    "di tích lịch sử": ["historical", "history", "historic", "cultural"],
+    "bảo tàng":        ["educational", "historical", "intellectual", "culture"],
+    
+    # Giá cả (Thêm mới nhẹ để chấm điểm không gian công cộng)
+    "miễn phí":        ["local_experience", "walk", "chill"], 
+    "free":            ["local_experience", "walk"],
 
     # Phong cách / Thẩm mỹ
     "sang trọng":      ["luxury", "scenic", "rooftop"],
@@ -195,6 +203,7 @@ GROUP_KEYWORDS_VN = {
     "gia đình", "ba mẹ", "con cái", "trẻ em",
     "bạn bè", "hội bạn", "hội", "nhóm bạn",
     "một mình",
+    "sinh viên", "học sinh"
 }
 
 # ============================================================================

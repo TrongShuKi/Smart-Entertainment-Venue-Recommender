@@ -1,9 +1,12 @@
-  /* ═══════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════
      EVENT BINDINGS — Part 1
   ═══════════════════════════════════════════════════════════ */
   document.addEventListener('DOMContentLoaded', () => {
     // Compute nav height for offset calculations
     APP_STATE._navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 64;
+
+    // Settings (theme + lang) — init trước mọi thứ
+    Settings.init();
 
     // Restore session (loadFavorites được gọi bên trong restoreSession/login)
     Auth.restoreSession();
@@ -53,6 +56,9 @@
     $('#nav-fav-btn').addEventListener('click', () => SidePanel.toggle());
     $('#close-side-panel').addEventListener('click', () => SidePanel.close());
 
+    // ── Navbar: settings (guest + logged-in)
+    $('#nav-settings-btn')?.addEventListener('click', () => Settings.open());
+
     // ── Navbar: login button (guest)
     $('#nav-login-btn').addEventListener('click', () => AuthModal.open('login'));
 
@@ -76,6 +82,10 @@
     $('#dd-favorites')?.addEventListener('click', () => {
       $('#user-dropdown').classList.remove('open');
       SidePanel.open();
+    });
+    $('#dd-settings')?.addEventListener('click', () => {
+      $('#user-dropdown').classList.remove('open');
+      Settings.open();
     });
     $('#dd-history')?.addEventListener('click', () => {
       $('#user-dropdown').classList.remove('open');
@@ -181,4 +191,3 @@
         // Silent fail — weather badge stays hidden
       });
   });
-

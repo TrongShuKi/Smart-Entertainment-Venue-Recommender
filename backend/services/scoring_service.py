@@ -135,6 +135,8 @@ NLP_TO_DB_ALIAS: Dict[str, Union[str, List[str]]] = {
     "di tích":         ["historical", "history", "historic"],
     "di tích lịch sử": ["historical", "history", "historic", "cultural"],
     "bảo tàng":        ["educational", "historical", "intellectual", "culture"],
+    "tham quan":       ["sightseeing", "exploration", "explore", "walk"],
+    "di tích văn hóa": ["historical", "cultural", "heritage"],
     
     # Giá cả (Thêm mới nhẹ để chấm điểm không gian công cộng)
     "miễn phí":        ["local_experience", "walk", "chill"], 
@@ -400,7 +402,7 @@ class RecommenderEngine:
             return False
 
         if weather in self.config["weather_rules"]["bad_weather_statuses"]:
-            loc_type = loc.get("type", "")
+            loc_type = loc.get("space_type", "")
             if _is_purely_outdoor(loc_type):
                 logger.debug(
                     f"[WeatherFilter] LOẠI '{loc.get('name')}' type='{loc_type}' weather='{weather}'"
@@ -440,8 +442,22 @@ class RecommenderEngine:
                 score += self.config["weights"]["mood"]
                 matched_moods.append(tag)
 
-        distance = self._calculate_distance(user_coords, loc["coords"])
-        score   += distance * self.config["weights"]["distance"]
+        # KHỞI TẠO: Mặc định dùng GPS của user
+        anchor_coords = user_coords
+        
+        # LOGIC DYNAMIC ANCHORING:
+        if target_coords:
+            # Tính khoảng cách từ GPS hiện tại tới khu vực khách muốn tìm
+            dist_gps_to_target = self._calculate_distance(user_coords, target_coords)
+            
+            # Nếu khách ở cách xa khu vực đó HƠN 5km -> Đang ở nơi khác, lấy tâm khu vực làm mốc.
+            # Nếu khách cách <= 5km -> Đang ở ngay trong/sát khu vực đó, dùng thẳng GPS hiện tại!
+            if dist_gps_to_target > 5.0:
+                anchor_coords = target_coords
+                
+        # Bắt đầu tính khoảng cách từ mốc (anchor) tới địa điểm
+        distance = self._calculate_distance(anchor_coords, loc["coords"])
+        score += distance * self.config["weights"]["distance"]
 
         location_boost = 0.0
         if target_coords:

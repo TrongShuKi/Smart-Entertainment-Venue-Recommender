@@ -1,16 +1,9 @@
 """
-scoring_service.py — v5 (Bug-fixed)
+scoring_service.py — v6 (Fixed DB Tags Mapping)
 =====================================
-FIXES so với v4:
-  FIX-1  MOOD_TAGS mở rộng: thêm đủ tất cả tags tồn tại trong DB thực tế
-  FIX-2  NLP_TO_DB_ALIAS → multi-value (Dict[str, List[str]]):
-         "sôi động" → ["energetic", "lively", "bustling", "fun"]
-  FIX-3  parse_tags: hỗ trợ alias 1→nhiều DB tag
-  FIX-4  Weather filter: handle space_type không nhất quán
-         ("indoor,outdoor" / "outdoor,indoor" → có indoor → không block)
-  FIX-5  Bộ lọc giờ mở cửa: conditional theo flag check_open_time
-         (trước đây luôn filter → loại 84% địa điểm khi tìm lúc tối)
-  FIX-6  generate_recommendations: nhận check_open_time từ user_context
+FIXES so với v5:
+  FIX-7  _passes_hard_filter: Lấy dữ liệu từ loc["group_tags"] thay vì loc["tags"] (vì DB đã tách cột)
+  FIX-8  _score: Lấy thẳng loc["mood_tags"] để chấm điểm thay vì phải lọc tay từ loc["tags"]
 """
 
 import logging
@@ -77,7 +70,7 @@ GROUP_TAGS_DB = {
 }
 
 # ============================================================================
-# FIX-2: ALIAS NLP → DB — multi-value (một VN term → nhiều EN DB tags)
+# ALIAS NLP → DB — multi-value (một VN term → nhiều EN DB tags)
 # ============================================================================
 
 NLP_TO_DB_ALIAS: Dict[str, Union[str, List[str]]] = {
@@ -110,6 +103,7 @@ NLP_TO_DB_ALIAS: Dict[str, Union[str, List[str]]] = {
     "đồ ăn ngon":      ["foodie", "food", "local_food"],
     "ngon":            ["food", "foodie", "local_food"],
     "quán ăn ngon":    ["food", "foodie"],
+    "giá rẻ":          ["local_experience", "local_food", "authentic"],
 
     # Thiên nhiên
     "thiên nhiên":     ["nature", "eco", "green_space", "peaceful"],
@@ -179,7 +173,8 @@ NLP_TO_DB_ALIAS: Dict[str, Union[str, List[str]]] = {
     "dạo phố":         ["walk", "walking", "chill", "sightseeing"],
     "tản bộ":          ["walk", "walking", "relax"],
     "hóng gió":        ["chill", "relax", "scenic"],
-    "ngắm cảnh":       ["scenic", "sightseeing", "panoramic"],
+    "ngắm cảnh":       ["scenic", "sightseeing", "panoramic", "nature"],
+    "ngắm cảnh đẹp":   ["scenic", "sightseeing", "panoramic", "instagrammable"],
 
     # Địa phương
     "bình dân":        ["local_experience", "local_food", "authentic"],
@@ -249,12 +244,6 @@ GROUP_DISPLAY_MAP: Dict[str, str] = {
 def parse_tags(nlp_tags: List[str]) -> Dict[str, List[str]]:
     """
     Phân loại NLP tags → {"style": [...], "mood": [...]}.
-
-    FIX-2 & FIX-3: Alias giờ là multi-value → một VN tag có thể map sang
-    nhiều DB tag, giúp tăng tỉ lệ match đáng kể.
-
-    Pipeline:
-      skip group → expand alias VN→EN (multi) → check STYLE → check MOOD → fallback.
     """
     style_list, mood_list = [], []
     all_group_kw = GROUP_TAGS_DB | GROUP_KEYWORDS_VN
@@ -265,7 +254,6 @@ def parse_tags(nlp_tags: List[str]) -> Dict[str, List[str]]:
         if normalized in all_group_kw:
             continue  # group keyword → bỏ qua
 
-        # FIX-3: resolve alias (có thể là str hoặc List[str])
         resolved = NLP_TO_DB_ALIAS.get(normalized, normalized)
         en_tags: List[str] = resolved if isinstance(resolved, list) else [resolved]
 
@@ -325,26 +313,13 @@ def _to_float_hour(val) -> float:
 
 def _is_purely_outdoor(space_type: str) -> bool:
     """
-    FIX-4: Xác định địa điểm là "chỉ ngoài trời" để block khi thời tiết xấu.
-
-    DB có nhiều format không nhất quán:
-      "outdoor"        → block
-      "underground"    → block (không có mái che thật sự)
-      "indoor"         → không block
-      "indoor_outdoor" → không block (có khu trong nhà)
-      "indoor,outdoor" → không block (format khác nhưng cùng nghĩa)
-      "outdoor,indoor" → không block
-      "mixed"          → không block
-
-    Logic: chỉ block khi KHÔNG có thành phần "indoor" nào.
+    Xác định địa điểm là "chỉ ngoài trời" để block khi thời tiết xấu.
     """
     st = space_type.lower().strip()
     if not st:
         return False
-    # Nếu có "indoor" → có khu trong nhà → không block
     if "indoor" in st:
         return False
-    # Chỉ block "outdoor" thuần hoặc "underground"
     return st in ("outdoor", "underground")
 
 
@@ -360,7 +335,7 @@ class RecommenderEngine:
             "weather_rules": {
                 "bad_weather_statuses": ["RAIN", "STORM", "DRIZZLE"],
             },
-            "max_results": 5,
+            "max_results": 3,
         }
 
     @staticmethod
@@ -391,11 +366,9 @@ class RecommenderEngine:
         must_haves: Dict,
         current_time: float,
         weather: str,
-        check_open_time: bool = False,   # FIX-5: mặc định KHÔNG filter theo giờ
+        check_open_time: bool = False,
     ) -> bool:
 
-        # FIX-5: Chỉ filter giờ mở cửa khi user thật sự chỉ định
-        # (timeopen=True hoặc nêu rõ thời điểm như "tối nay", "sáng mai")
         if check_open_time:
             if not self._is_open(loc.get("open_time"), loc.get("close_time", 23.99), current_time):
                 logger.debug(
@@ -405,14 +378,12 @@ class RecommenderEngine:
                 )
                 return False
 
-        # Ngân sách
         price = loc.get("price", 0)
         if isinstance(price, str):
             price = 0 if price.lower() in ("free", "") else int(price)
         if "budget" in must_haves and price > must_haves["budget"]:
             return False
 
-        # FIX-4: Weather — dùng _is_purely_outdoor thay vì so sánh string cứng
         if weather in self.config["weather_rules"]["bad_weather_statuses"]:
             loc_type = loc.get("type", "")
             if _is_purely_outdoor(loc_type):
@@ -421,15 +392,14 @@ class RecommenderEngine:
                 )
                 return False
 
-        # Rating tối thiểu
         if must_haves.get("min_rating") and loc.get("rating", 0) < must_haves["min_rating"]:
             return False
 
-        # Group filter — đọc từ loc["tags"]
+        # FIX-7: Group filter — lấy dữ liệu trực tiếp từ "group_tags"
         required_group = must_haves.get("group_db_tags")
         if required_group:
-            loc_tags_lower = [t.lower() for t in loc.get("tags", [])]
-            if not any(g in loc_tags_lower for g in required_group):
+            loc_group_tags = [t.lower() for t in loc.get("group_tags", [])]
+            if not any(g in loc_group_tags for g in required_group):
                 return False
 
         return True
@@ -444,9 +414,8 @@ class RecommenderEngine:
         score = loc.get("rating", 0.0)
         matched_styles, matched_moods = [], []
 
-        # Lấy scorable tags (loại group tags)
-        loc_tags = [t.lower() for t in loc.get("tags", [])]
-        scorable = [t for t in loc_tags if t not in GROUP_TAGS_DB]
+        # FIX-8: Lấy thẳng "mood_tags" để chấm điểm, bỏ qua việc phải phân tách lọc thủ công
+        scorable = [t.lower() for t in loc.get("mood_tags", [])]
 
         for tag in scorable:
             if tag in preferences.get("style", []):
@@ -459,7 +428,6 @@ class RecommenderEngine:
         distance = self._calculate_distance(user_coords, loc["coords"])
         score   += distance * self.config["weights"]["distance"]
 
-        # Location boost dựa trên khoảng cách tới target_coords
         location_boost = 0.0
         if target_coords:
             dist_to_target = self._calculate_distance(target_coords, loc["coords"])
@@ -496,8 +464,6 @@ class RecommenderEngine:
         user_coords   = user_context["coords"]
         target_coords = user_context.get("target_coords")
 
-        # FIX-5 & FIX-6: Đọc flag check_open_time từ user_context
-        # Chỉ True khi user nêu rõ thời điểm hoặc muốn lọc đang mở
         check_open_time = user_context.get("check_open_time", False)
 
         valid = [

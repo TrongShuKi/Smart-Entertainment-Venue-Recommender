@@ -1,0 +1,184 @@
+/* ═══════════════════════════════════════════════════════════
+     AUTH MANAGER
+  ═══════════════════════════════════════════════════════════ */
+  const Auth = {
+    login(userData) {
+      APP_STATE.user = userData;
+      APP_STATE.isGuest = false;
+      this._updateUI();
+      this._persistSession(userData);
+      Favorites.load();           // load từ Firestore (async, không block)
+      showToast(`Chào mừng, ${userData.email}!`, 'success');
+    },
+
+    logout() {
+      APP_STATE.user            = null;
+      APP_STATE.isGuest         = true;
+      APP_STATE.places          = [];
+      APP_STATE.results         = null;
+      APP_STATE.contextSummary  = '';
+      APP_STATE.resultsRevealed = false;
+
+      Favorites.clear();
+
+      // Ẩn Tầng 2 & 3, reset nội dung
+      const disc = document.getElementById('section-discovery');
+      const dec  = document.getElementById('section-decision');
+      if (disc) { disc.classList.remove('revealed'); disc.innerHTML = ''; }
+      if (dec)  dec.classList.remove('revealed');
+      
+      // Clear content ô tìm kiếm
+      const searchInput = document.getElementById('main-search-input');
+      if (searchInput) { searchInput.value = '';}
+
+      this._updateUI();
+      localStorage.removeItem('st_session');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showToast('Đã đăng xuất', 'success', 2000);
+    },
+
+    _persistSession(data) {
+      try { localStorage.setItem('st_session', JSON.stringify(data)); } catch(e) {}
+    },
+
+    restoreSession() {
+      try {
+        const raw = localStorage.getItem('st_session');
+        if (raw) {
+          const data = JSON.parse(raw);
+          if (data?.idToken) {
+            APP_STATE.user = data;
+            APP_STATE.isGuest = false;
+            this._updateUI();
+            Favorites.load();     // load từ Firestore
+            return true;
+          }
+        }
+      } catch(e) {}
+      return false;
+    },
+
+    _updateUI() {
+      const loggedIn = !APP_STATE.isGuest;
+
+      // Guest elements — chỉ hiện khi chưa đăng nhập
+      ['nav-guest-tag', 'nav-login-btn'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = loggedIn ? 'none' : '';
+      });
+
+      // Logged-in elements — chỉ hiện khi đã đăng nhập
+      const userWrap = document.getElementById('nav-user-wrap');
+      if (userWrap) userWrap.style.display = loggedIn ? 'block' : 'none';
+
+      if (loggedIn && APP_STATE.user) {
+        const emailEl = document.getElementById('dropdown-email');
+        const nameEl  = document.getElementById('dropdown-name');
+        if (emailEl) emailEl.textContent = APP_STATE.user.email || '';
+        if (nameEl)  nameEl.textContent  = (APP_STATE.user.email || '').split('@')[0];
+      }
+
+      // Update side panel (sẽ tự update badge bên trong)
+      SidePanel.render();
+    },
+  };
+
+  /* ═══════════════════════════════════════════════════════════
+     AUTH MODAL
+  ═══════════════════════════════════════════════════════════ */
+  const AuthModal = {
+    _tab: 'login',
+
+    open(tab = 'login') {
+      this.switchTab(tab);
+      $('#auth-modal').classList.add('open');
+      setTimeout(() => document.addEventListener('keydown', this._onKey), 50);
+    },
+    close() {
+      $('#auth-modal').classList.remove('open');
+      document.removeEventListener('keydown', this._onKey);
+      ['login-error', 'signup-error'].forEach(id => { const el = $(`#${id}`); if(el) el.textContent = ''; });
+    },
+    _onKey(e) { if (e.key === 'Escape') AuthModal.close(); },
+
+    switchTab(tab) {
+      this._tab = tab;
+      $$('.auth-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+      });
+      $('#auth-form-login').style.display  = tab === 'login'  ? 'block' : 'none';
+      $('#auth-form-signup').style.display = tab === 'signup' ? 'block' : 'none';
+    },
+
+    async submitLogin() {
+      const email = $('#login-email').value.trim();
+      const pwd   = $('#login-password').value;
+      const errEl = $('#login-error');
+
+      if (!email || !pwd) {
+        errEl.textContent = '⚠ Vui lòng nhập đầy đủ thông tin';
+        return;
+      }
+
+      const btn = $('#login-submit');
+      const origText = btn.textContent;
+      btn.textContent = 'Đang đăng nhập...';
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+      errEl.textContent = '';
+
+      try {
+        const data = await API.login(email, pwd);
+        Auth.login({ uid: data.uid, email: data.email, idToken: data.idToken });
+        this.close();
+      } catch(err) {
+        errEl.textContent = '✕ Sai email hoặc mật khẩu. Thử lại nhé!';
+        const box = btn.closest('.modal-box');
+        if (box) { box.style.animation = 'shake 0.3s ease'; setTimeout(() => box.style.animation = '', 300); }
+      } finally {
+        btn.textContent = origText;
+        btn.disabled = false;
+        btn.style.opacity = '';
+      }
+    },
+
+    async submitSignup() {
+      const email = $('#signup-email').value.trim();
+      const pwd   = $('#signup-password').value;
+      const errEl = $('#signup-error');
+
+      if (!email || !pwd) {
+        errEl.textContent = '⚠ Vui lòng nhập đầy đủ thông tin';
+        return;
+      }
+      if (pwd.length < 6) {
+        errEl.textContent = '⚠ Mật khẩu phải có ít nhất 6 ký tự';
+        return;
+      }
+      if (!email.includes('@')) {
+        errEl.textContent = '⚠ Email không hợp lệ';
+        return;
+      }
+
+      const btn = $('#signup-submit');
+      const origText = btn.textContent;
+      btn.textContent = 'Đang tạo tài khoản...';
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+      errEl.textContent = '';
+
+      try {
+        await API.signup(email, pwd);
+        showToast('Tạo tài khoản thành công! Đang đăng nhập...', 'success');
+        const data = await API.login(email, pwd);
+        Auth.login({ uid: data.uid, email: data.email, idToken: data.idToken });
+        this.close();
+      } catch(err) {
+        errEl.textContent = '✕ ' + (err.message || 'Tạo tài khoản thất bại. Email có thể đã tồn tại.');
+      } finally {
+        btn.textContent = origText;
+        btn.disabled = false;
+        btn.style.opacity = '';
+      }
+    },
+  };

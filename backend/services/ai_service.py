@@ -1,81 +1,244 @@
-from google import genai
-from google.genai import types
+"""
+ai_service.py
+=============
+Hai hàm chính:
+  - extract_nlp_intent(user_chat) → dict   # phân tích câu chat
+  - generate_text(name, category, ctx)  → dict {"description": str, "fact": str}
+"""
 
-from pydantic import BaseModel, Field
-from typing import List, Optional
 import json
 import os
+import re
+import logging
+import threading
+from datetime import datetime
+from pathlib import Path
+from typing import List, Optional
+
 from dotenv import load_dotenv
+from google import genai
+from google.genai import types
+from pydantic import BaseModel, Field
+
 load_dotenv()
+logger = logging.getLogger(__name__)
+
 API_KEY = os.getenv("GEMINI_API_KEY")
 
-#  Hàm Trích xuất NLP
+# ==== Fallback
+_FALLBACK_GENERATE = {"description": "", "fact": ""}
+_FALLBACK_NLP = {
+    "location": None,
+    "max_price": None,
+    "tags": [],
+    "timeopen": None,
+    "min_rating": None,
+    "current_time": None,
+}
 
-def generate_text(location_name, category, user_context):
-    """
-    Hàm tạo sinh nội dung văn hóa và fact thú vị cho địa điểm.
-    """
+# ══════════════════════════════════════════════════════════════════════════════
+# CACHE generate_text
+# ══════════════════════════════════════════════════════════════════════════════
+_AI_CACHE_FILE = (
+    Path(__file__).resolve().parent.parent.parent / "data" / "ai_content_cache.json"
+)
+_cache_lock = threading.Lock()
+
+
+def _load_ai_cache() -> dict:
     try:
-        client = genai.Client(api_key=API_KEY)
-        
-        prompt = f"""
-        Viết 1 đoạn tóm tắt ngắn gọn (khoảng 2 câu) để hiển thị trên thẻ website du lịch cho địa điểm: '{location_name}' (Loại hình: {category}).
-        Ngữ cảnh của du khách: {user_context}.
-
-        YÊU CẦU NGHIÊM NGẶT:
-        1. Giọng văn khách quan, hiện đại và cuốn hút. 
-        2. KHÔNG xưng hô trò chuyện trực tiếp (TUYỆT ĐỐI KHÔNG dùng các cụm từ như: "Chào bạn", "Mời hai bạn", "Chúng ta cùng", "Bạn hãy").
-        3. Khéo léo chọn góc nhìn phù hợp với ngữ cảnh của khách nhưng không được gượng ép. (Ví dụ: Nếu khách đi cặp đôi đến nơi lịch sử, hãy nhấn mạnh không gian kiến trúc ấn tượng hoặc sự yên tĩnh để đi dạo cùng nhau, đừng dạy triết lý).
-        4. Cuối cùng đưa ra một "💡 Fact thú vị: " là một sự thật ngắn gọn về nơi này.
-        """
-
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt,
-        )
-        return response.text.strip()
-    
+        if _AI_CACHE_FILE.exists():
+            return json.loads(_AI_CACHE_FILE.read_text(encoding="utf-8"))
     except Exception as e:
-        print(f"Lỗi AI Generate: {e}")
-        return f"Một địa điểm tuyệt vời thuộc loại hình {category} đang chờ bạn khám phá! 💡 Fact thú vị: Hãy đến tận nơi để trải nghiệm nhé!"
+        logger.warning(f"[AI Cache] Lỗi đọc: {e}")
+    return {}
 
-# HÀM TRÍCH XUẤT NLP 
+
+def _save_ai_cache(cache: dict) -> None:
+    try:
+        _AI_CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _AI_CACHE_FILE.write_text(
+            json.dumps(cache, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+    except Exception as e:
+        logger.warning(f"[AI Cache] Lỗi ghi: {e}")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SCHEMA cho generate_text và extract_nlp_intent
+# ══════════════════════════════════════════════════════════════════════════════
+class GeneratedPlaceContent(BaseModel):
+    description: str = Field(
+        description=(
+            "Đoạn mô tả ngắn gọn 1–2 câu về địa điểm, giọng văn khách quan và cuốn hút. "
+            "KHÔNG xưng hô trực tiếp (không dùng: 'Bạn hãy', 'Chào bạn', 'Mời bạn'). "
+            "Khéo léo lồng ghép ngữ cảnh của du khách nếu phù hợp."
+        )
+    )
+    fact: str = Field(
+        description=(
+            "Một sự thật thú vị, độc đáo và ngắn gọn về địa điểm này. "
+            "KHÔNG bắt đầu bằng '💡 Fact thú vị:' — chỉ trả về nội dung thuần túy."
+        )
+    )
+
+
 class NLPResponse(BaseModel):
-    location: Optional[str] = Field(description="Tên quận/huyện/địa điểm. Nếu không có để null.")
-    max_price: Optional[int] = Field(description="Mức giá tối đa quy ra VNĐ (vd: 100k -> 100000). Nếu không có để null.")
-    tags: List[str] = Field(description="Mảng các từ khóa sở thích, không gian (vd: 'yên tĩnh', 'cà phê').")
-    timeopen: Optional[bool] = Field(description="Trả về true nếu muốn chỗ 'đang mở cửa', 'bây giờ'. Nếu không để null.")
-    min_rating: Optional[float] = Field(description="Số sao tối thiểu (vd: 4.0). Nếu không có để null.")
-    current_time: Optional[str] = Field(description="Thời gian đi chơi (vd: 'tối nay'). Đi ngay trả về 'now'. Nếu không để null.")
+    location: Optional[str] = Field(
+        default=None,
+        description="Tên Quận/Thành phố đối với các thành phố trực thuộc trung ương hoặc tên tỉnh tương ứng với địa điểm mà người dùng đề cập."
+        "Ví dụ: 'Quận 1', 'Quận Hoàn Kiếm', 'Quảng Bình', 'Nghệ An', 'Dĩ An'."
+        "QUAN TRỌNG: Bắt buộc chuyển các khu vực lóng/không chính thức (VD: 'Làng Đại học', 'Phố đi bộ') "
+            "thành tên Quận/Huyện/Thành phố hợp lệ (VD: 'Làng Đại học' -> 'Dĩ An'). "
+        "Nếu không có để null."
+    )
+    max_price: Optional[int] = Field(
+        default=None, 
+        description="Mức giá tối đa quy ra VNĐ. Nếu không có để null."
+    )
+    tags: List[str] = Field(
+        default_factory=list, 
+        description=
+            "Mảng từ khóa sở thích, không gian và nhóm đi cùng."
+            "LƯU Ý 1: Bắt buộc giữ lại các từ khóa chỉ đối tượng (VD: 'người yêu', 'gia đình', 'bạn bè', 'trẻ em'...). "
+            "TUYỆT ĐỐI KHÔNG tự suy diễn hay gán bừa nhóm đi cùng nếu người dùng không nhắc đến. Ví dụ: Khách nói 'ăn với người iu' -> mảng tags có chữ 'người yêu'. Khách không nói đi với ai -> không thêm từ khóa người."
+            "LƯU Ý 2: KHUYẾN KHÍCH suy diễn thêm các từ khóa về cảm xúc, không gian (VD: lãng mạn, chill, yên tĩnh) nếu phù hợp với ngữ cảnh của câu chat."
+    )
+    timeopen: Optional[bool] = Field(
+        default=None, 
+        description="True nếu muốn chỗ đang mở cửa."
+    )
+    min_rating: Optional[float] = Field(
+        default=None, 
+        description="Số sao tối thiểu. Nếu không có để null."
+    )
+    current_time: Optional[str] = Field(
+        default=None,
+        description="Thời điểm người dùng đề cập. "
+        "Trả về chuỗi yyyy-mm-dd hh:mm:ss. Ví dụ: '2026-05-30 12:03:30', '2026-10-29 00:59:00'. "
+        "Nếu không đề cập đến thì trả về thời gian hiện tại."
+    )
 
-def extract_nlp_intent(user_chat: str) -> dict:
+
+# ══════════════════════════════════════════════════════════════════════════════
+# generate_text
+# ══════════════════════════════════════════════════════════════════════════════
+def generate_text(location_name: str, category: str, user_context: str) -> dict:
+    """
+    Sinh mô tả + fact cho 1 địa điểm.
+    Returns:
+        {"description": str, "fact": str}
+        Trả về dict rỗng-string nếu API lỗi — KHÔNG BAO GIỜ raise hoặc trả string thô.
+    """
+    # 1. Cache hit?
+    cache = _load_ai_cache()
+    if location_name in cache:
+        logger.info(f"[AI Cache] HIT: '{location_name}'")
+        return cache[location_name]
+
+    logger.info(f"[AI Cache] MISS -> goi Gemini: '{location_name}'")
+
+    # 2. Goi Gemini
     try:
         client = genai.Client(api_key=API_KEY)
-        
-        system_instruction = """
-        Bạn là hệ thống AI phân tích ngôn ngữ tự nhiên.
-        Nhiệm vụ: Phân tích câu nói của người dùng và trích xuất thông tin chuẩn xác theo định dạng JSON.
-        Lưu ý: Quy đổi tiền tệ tiếng lóng thành số nguyên VNĐ.
-        """
-        
-        prompt = f'Ngữ cảnh người dùng: "{user_chat}"'
-        
+
+        prompt = (
+            f"Địa điểm: '{location_name}' (Loại hình: {category}).\n"
+            f"Ngữ cảnh du khách: {user_context}.\n\n"
+            "Yêu cầu:\n"
+            "1. Trường 'description': 1–2 câu mô tả cuốn hút, giọng khách quan, "
+            "KHÔNG xưng hô trực tiếp. Lồng ghép ngữ cảnh du khách nếu tự nhiên.\n"
+            "2. Trường 'fact': 1 sự thật thú vị, ngắn gọn, KHÔNG bắt đầu bằng '💡'."
+        )
+
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model="gemini-2.5-flash",
             contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=GeneratedPlaceContent,
+                temperature=0.7,
+            ),
+        )
+
+        raw = response.text.strip()
+        raw = re.sub(r"^```json\s*", "", raw)
+        raw = re.sub(r"\s*```$", "", raw)
+
+        validated = GeneratedPlaceContent.model_validate_json(raw)
+        result = validated.model_dump()
+
+        # 3. Luu cache
+        with _cache_lock:
+            latest_cache = _load_ai_cache()
+            latest_cache[location_name] = result
+            _save_ai_cache(latest_cache)
+
+        logger.info(f"[AI Cache] Da luu: '{location_name}' -> {_AI_CACHE_FILE}")
+
+        return result
+
+    except Exception as e:
+        logger.warning(f"[AI Generate] Lỗi cho '{location_name}': {e}")
+        return {
+            "description": f"Một địa điểm {category} đáng trải nghiệm tại TP.HCM.",
+            "fact": "Hãy đến tận nơi để cảm nhận không khí thực sự của địa điểm này.",
+        }
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# extract_nlp_intent
+# ══════════════════════════════════════════════════════════════════════════════
+def extract_nlp_intent(user_chat: str) -> dict:
+    """
+    Trích xuất ngữ cảnh từ câu chat tự nhiên của người dùng.
+    Args:
+        user_chat: Câu chat thô (tiếng Việt, teencode, không dấu đều được)
+    Returns: dict 6 trường
+        location     : str | None
+        max_price    : int | None
+        tags         : list[str]
+        timeopen     : bool | None
+        min_rating   : float | None
+        current_time : str | None
+    Fallback: trả dict rỗng chuẩn nếu Gemini lỗi, không bao giờ raise.
+    """
+    try:
+        client = genai.Client(api_key=API_KEY)
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        system_instruction = f"""
+        Bạn là hệ thống AI phân tích ngôn ngữ tự nhiên cho ứng dụng Smart Tourism.
+        Thời gian hiện tại là {current_time}.
+        Nhiệm vụ: Trích xuất thông tin sang JSON THEO ĐÚNG CẤU TRÚC 6 TRƯỜNG ĐÃ QUY ĐỊNH.
+
+        XỬ LÝ THÔNG MINH (KHÔNG ĐỔI CẤU TRÚC JSON):
+        1. Lạc đề: Trả về JSON rỗng nếu câu KHÔNG liên quan du lịch/ăn uống/vui chơi.
+        2. Đổi ý: Lấy giá trị ĐƯỢC CHỐT CUỐI CÙNG.
+        3. Tiền lóng: Tự quy đổi ("nửa củ"=500000, "1 lít"=100000, "vài chục"=50000).
+        4. Teencode & không dấu: Tự hiểu (q1, cf, ko ồn, đi vs bồ).
+        5. Từ khóa: Gom TẤT CẢ nhu cầu và thời tiết (nếu có) vào `tags`. Từ phủ định → từ tích cực tương đương.
+        """
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=f'Câu chat người dùng: "{user_chat}"',
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
                 response_mime_type="application/json",
                 response_schema=NLPResponse,
-                temperature=0.0, 
+                temperature=0.0,
             ),
         )
-        
-        return json.loads(response.text)
+
+        raw = response.text.strip()
+        raw = re.sub(r"^```json\s*", "", raw)
+        raw = re.sub(r"\s*```$", "", raw)
+
+        validated = NLPResponse.model_validate_json(raw)
+        return validated.model_dump()
 
     except Exception as e:
-        print(f"Lỗi khi trích xuất NLP: {e}")
-        return {
-            "location": None, "max_price": None, "tags": [], 
-            "timeopen": None, "min_rating": None, "current_time": None
-        }
+        logger.error(f"[NLP] Lỗi trích xuất: {e}")
+        return _FALLBACK_NLP.copy()

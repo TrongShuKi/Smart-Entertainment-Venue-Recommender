@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Tourism</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Swiper -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- CSS (thứ tự quan trọng) -->
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/navbar.css" />
+  <link rel="stylesheet" href="css/hero.css" />
+  <link rel="stylesheet" href="css/discovery.css" />
+  <link rel="stylesheet" href="css/decision.css" />
+  <link rel="stylesheet" href="css/modals.css" />
+  <link rel="stylesheet" href="css/side-panel.css" />
+  <link rel="stylesheet" href="css/utils.css" />
+</head>
+
+<body>
+
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       NAVBAR
+  ═══════════════════════════════════════════ -->
+  <nav id="navbar">
+    <!-- Brand -->
+    <div class="nav-brand" id="nav-brand" title="Về trang chủ">
+      <div class="nav-brand-icon">✦</div>
+      <span class="nav-brand-text">Smart Tourism</span>
+    </div>
+
+    <!-- Center links -->
+    <ul class="nav-links">
+      <li><a href="#section-hero" class="active" data-scroll="section-hero">Trang Chủ</a></li>
+      <li><a href="#section-discovery" data-scroll="section-discovery">Địa Điểm</a></li>
+      <li><a href="#section-decision" data-scroll="section-decision">Bản đồ & Thời Tiết</a></li>
+    </ul>
+
+    <!-- Actions -->
+    <div class="nav-actions">
+      <!-- Search (scroll to hero & focus input) -->
+      <button class="nav-btn nav-search" id="nav-search-btn" title="Tìm kiếm">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </button>
+
+      <!-- Favorites -->
+      <button class="nav-btn" id="nav-fav-btn" title="Yêu thích">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        <span class="badge" id="fav-badge">0</span>
+      </button>
+
+      <!-- User (guest state) -->
+      <span class="guest-tag" id="nav-guest-tag">GUEST</span>
+      <div class="nav-user-wrap" id="nav-user-wrap" style="display:none;">
+        <button class="nav-btn" id="nav-user-btn" title="Tài khoản">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+        </button>
+        <div class="user-dropdown" id="user-dropdown">
+          <div class="dropdown-user-info">
+            <div class="dropdown-user-name" id="dropdown-name">Người dùng</div>
+            <div class="dropdown-user-email" id="dropdown-email">user@example.com</div>
+          </div>
+          <div class="dropdown-item" id="dd-history">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Lịch sử tìm kiếm
+          </div>
+          <div class="dropdown-item" id="dd-favorites">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            Yêu thích
+          </div>
+          <div class="dropdown-sep"></div>
+          <div class="dropdown-item danger" id="dd-logout">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Đăng xuất
+          </div>
+        </div>
+      </div>
+
+      <!-- Login button (guest) -->
+      <button class="nav-login-btn" id="nav-login-btn" title="Đăng nhập">
+        ĐĂNG NHẬP
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════
+       SECTION 1 — HERO
+  ═══════════════════════════════════════════ -->
+  <section id="section-hero">
+    <!-- Background -->
+    <div class="hero-bg" id="hero-bg"></div>
+    <div class="hero-overlay"></div>
+
+    <!-- Main content -->
+    <div class="hero-content">
+      <span class="hero-eyebrow">✦ Hệ thống AI gợi ý địa điểm</span>
+
+      <h1 class="hero-title">
+        Smart<br/><em>Tourism</em>
+      </h1>
+
+      <p class="hero-sub">
+        Nhập bất cứ điều bạn cảm thấy — AI sẽ tìm địa điểm hoàn hảo cho bạn
+      </p>
+
+      <!-- Search -->
+      <div class="hero-search-wrap">
+        <div class="hero-search-box">
+          <input
+            type="text"
+            class="hero-search-input"
+            id="main-search-input"
+            placeholder="VD: Đang stress, trời mưa, đi với bạn bè có ghế 300k ở Quận 1..."
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button class="hero-search-btn" id="search-btn" aria-label="Tìm kiếm">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Quick chips -->
+        <div class="hero-chips">
+          <span class="hero-chip" data-query="Muốn chill yên tĩnh, dưới 100k, gần trung tâm">☕ Chill buổi tối</span>
+          <span class="hero-chip" data-query="Đi cùng gia đình cuối tuần, trẻ em, không gian rộng">👨‍👩‍👧 Gia đình cuối tuần</span>
+          <span class="hero-chip" data-query="Hẹn hò lãng mạn, không gian đẹp, tầm 300k">❤️ Hẹn hò lãng mạn</span>
+          <span class="hero-chip" data-query="Trời mưa, muốn ăn uống trong nhà, hội bạn">🌧️ Trời mưa ở nhà</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weather mini badge -->
+    <div class="hero-weather-badge" id="hero-weather-badge">
+      <span class="weather-badge-icon" id="hero-weather-icon">⛅</span>
+      <div class="weather-badge-info">
+        <span class="weather-badge-temp" id="hero-weather-temp">--°C</span>
+        <span class="weather-badge-desc" id="hero-weather-desc">Đang tải...</span>
+      </div>
+    </div>
+
+    <!-- Scroll cue (hidden after results) -->
+    <div class="hero-scroll-cue" id="hero-scroll-cue">
+      <div class="scroll-line"></div>
+      <span class="scroll-label">Cuộn xuống</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       SECTION 2 — DISCOVERY (rendered by JS Part 2)
+  ═══════════════════════════════════════════ -->
+  <section id="section-discovery">
+    <div class="discovery-placeholder" id="discovery-placeholder">
+      <div class="discovery-placeholder-dot"></div>
+      <span>Đang phân tích kết quả...</span>
+    </div>
+    <!-- JS Part 2 sẽ inject HTML vào đây -->
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       SECTION 3 — DECISION HUB (rendered by JS Part 4)
+  ═══════════════════════════════════════════ -->
+  <section id="section-decision">
+    <!-- JS Part 4 sẽ inject HTML vào đây -->
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       AUTH MODAL
+  ═══════════════════════════════════════════ -->
+  <div id="auth-modal" role="dialog" aria-modal="true" aria-label="Đăng nhập">
+    <div class="modal-backdrop" id="auth-backdrop"></div>
+    <div class="modal-box">
+      <button class="modal-close" id="auth-modal-close" aria-label="Đóng">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <h2 class="modal-title">Chào mừng</h2>
+      <p class="modal-sub">Đăng nhập để lưu địa điểm yêu thích và xem lịch sử</p>
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Đăng nhập</button>
+        <button class="auth-tab" data-tab="signup">Tạo tài khoản</button>
+      </div>
+
+      <!-- Login Form -->
+      <div id="auth-form-login">
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email</label>
+          <input type="email" class="form-input" id="login-email" placeholder="ban@example.com" autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="login-password">Mật khẩu</label>
+          <input type="password" class="form-input" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <div class="auth-error" id="login-error"></div>
+        <button class="btn-primary" id="login-submit">Đăng nhập</button>
+
+        <div class="auth-divider">hoặc</div>
+        <button class="btn-google" id="google-login-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Tiếp tục với Google
+        </button>
+      </div>
+
+      <!-- Signup Form -->
+      <div id="auth-form-signup" style="display:none;">
+        <div class="form-group">
+          <label class="form-label" for="signup-email">Email</label>
+          <input type="email" class="form-input" id="signup-email" placeholder="ban@example.com" autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="signup-password">Mật khẩu</label>
+          <input type="password" class="form-input" id="signup-password" placeholder="Ít nhất 6 ký tự" autocomplete="new-password" />
+        </div>
+        <div class="auth-error" id="signup-error"></div>
+        <button class="btn-primary" id="signup-submit">Tạo tài khoản</button>
+
+        <div class="auth-divider">hoặc</div>
+        <button class="btn-google" id="google-signup-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Tiếp tục với Google
+        </button>
+      </div>
+
+      <!-- Guest CTA -->
+      <div class="guest-note">
+        <p class="guest-note-text">
+          Không muốn đăng nhập?
+          <a id="continue-as-guest">Dùng thử với tư cách khách →</a>
+        </p>
+      </div>
+    </div>
+  </div>
+  <!-- ═══════════════════════════════════════════
+     DETAIL MODAL — Phần 3
+  ═══════════════════════════════════════════ -->
+  <div id="detail-modal" role="dialog" aria-modal="true">
+    <div class="detail-backdrop" id="detail-backdrop"></div>
+    <div class="detail-panel">
+
+      <!-- Close -->
+      <button class="detail-close" id="detail-close" aria-label="Đóng">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+
+      <!-- Left image strip -->
+      <div class="detail-img-strip" id="detail-img-strip">
+        <img id="detail-img" src="" alt="" />
+        <div class="detail-img-strip-overlay"></div>
+        <div class="detail-img-rank" id="detail-img-rank"></div>
+      </div>
+
+      <!-- Right content -->
+      <div class="detail-content">
+
+        <div class="detail-category-badge" id="detail-category">
+          <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+          <span id="detail-category-text">--</span>
+        </div>
+
+        <h2 class="detail-title" id="detail-title">--</h2>
+
+        <div class="detail-meta-row">
+          <span class="detail-stars" id="detail-stars">★★★★★</span>
+          <span class="detail-rating-num" id="detail-rating">0.0/5</span>
+          <span class="detail-distance-chip">
+            <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/>
+            </svg>
+            <span id="detail-distance">-- km</span>
+          </span>
+        </div>
+
+        <!-- Mini map -->
+        <div class="detail-map-wrap">
+          <div id="detail-mini-map"></div>
+        </div>
+
+        <!-- Description -->
+        <div class="detail-section-label">Mô tả</div>
+        <p class="detail-description" id="detail-desc">--</p>
+
+        <!-- Fact -->
+        <div class="detail-fact-box">
+          <div class="detail-fact-icon">💡</div>
+          <div class="detail-fact-text" id="detail-fact">--</div>
+        </div>
+
+        <!-- Info rows -->
+        <div class="detail-info-list" id="detail-info-list">
+          <div class="detail-info-row">
+            <div class="detail-info-icon">🕐</div>
+            <span class="detail-info-label">Trạng thái:</span>
+            <span class="detail-info-value open" id="detail-status">Mở cửa</span>
+          </div>
+          <div class="detail-info-row">
+            <div class="detail-info-icon">🎫</div>
+            <span class="detail-info-label">Vé vào cửa:</span>
+            <span class="detail-info-value" id="detail-price-row">--</span>
+          </div>
+          <div class="detail-info-row">
+            <div class="detail-info-icon">🏷️</div>
+            <span class="detail-info-label">Loại hình:</span>
+            <span class="detail-info-value" id="detail-tag-row">--</span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="detail-actions">
+          <a class="detail-btn-maps" id="detail-btn-maps" href="#" target="_blank" rel="noopener">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+            </svg>
+            Chỉ đường Google Maps
+          </a>
+          <button class="detail-btn-save" id="detail-btn-save" title="Lưu yêu thích">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </button>
+        </div>
+
+      </div><!-- end detail-content -->
+    </div><!-- end detail-panel -->
+  </div>
+  <!-- ═══════════════════════════════════════════
+       SIDE PANEL — Yêu thích
+  ═══════════════════════════════════════════ -->
+  <div id="side-panel">
+    <div class="side-panel-header">
+      <h3 class="side-panel-title">❤ Yêu thích</h3>
+      <button class="nav-btn" id="close-side-panel">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="side-panel-body" id="side-panel-body">
+      <!-- Injected by JS -->
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       HISTORY MODAL
+  ═══════════════════════════════════════════ -->
+  <div id="history-modal" role="dialog" aria-modal="true" aria-label="Lịch sử tìm kiếm">
+    <div class="modal-backdrop" id="history-backdrop"></div>
+    <div class="modal-box" style="width:520px;">
+      <button class="modal-close" id="history-modal-close" aria-label="Đóng">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <h2 class="modal-title">Lịch sử tìm kiếm</h2>
+      <p class="modal-sub" id="history-modal-sub">Các lượt tìm kiếm gần đây của bạn</p>
+      <div id="history-list" style="margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       TOAST
+  ═══════════════════════════════════════════ -->
+  <div id="toast">
+    <span id="toast-icon">⚠</span>
+    <span id="toast-text">Lỗi không xác định</span>
+  </div>
+
+  <!-- ── THIRD-PARTY JS ─────────────────────────────────────── -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- ── APP JS (thứ tự load quan trọng) ──────────────────── -->
+  <script src="js/state.js"></script>
+  <script src="js/ui-utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/favorites.js"></script>
+  <script src="js/side-panel.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/history.js"></script>
+  <script src="js/discovery.js"></script>
+  <script src="js/detail-modal.js"></script>
+  <script src="js/decision-hub.js"></script>
+  <script src="js/main.js"></script>
+
+</body>
+</html>

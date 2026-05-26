@@ -45,19 +45,13 @@ def _parse_time(value) -> float:
         return 0.0
 
 
-def _parse_tags(raw_mood: str, raw_group: str) -> List[str]:
+def _parse_tag_string(raw_str: str) -> List[str]:
     """
-    Ghép mood_tags + group_tags → list[str] đã strip + lower.
+    Bóc tách 1 chuỗi tag (ngăn cách bởi dấu phẩy) thành list[str].
     """
-    tags: List[str] = []
-    for raw in (raw_mood, raw_group):
-        if not raw or str(raw).lower() in ("none", "nan", "null"):
-            continue
-        for t in str(raw).split(","):
-            t = t.strip().lower()
-            if t:
-                tags.append(t)
-    return tags
+    if not raw_str or str(raw_str).lower() in ("none", "nan", "null"):
+        return []
+    return [t.strip().lower() for t in str(raw_str).split(",") if t.strip()]
 
 
 def _row_to_dict(row: sqlite3.Row) -> Dict:
@@ -67,7 +61,6 @@ def _row_to_dict(row: sqlite3.Row) -> Dict:
     lat = row["latitude"]  or 0.0
     lon = row["longitude"] or 0.0
 
-    # FIX: open_time=0.0 là midnight (00:00), không nên bị coerce sang 0.0 rồi
     raw_open  = _parse_time(row["open_time"])
     raw_close = _parse_time(row["close_time"])
 
@@ -81,7 +74,8 @@ def _row_to_dict(row: sqlite3.Row) -> Dict:
 
         # ── Phân loại ──────────────────────────────────────────────────
         "category":   str(row["category"]   or "").strip(),
-        "type":       str(row["space_type"] or "").strip(),
+        # FIX CỰC MẠNH 1: Trả về đúng key 'space_type' cho Backend nhận diện
+        "space_type": str(row["space_type"] or "").strip().lower(),
 
         # ── Giá & Rating ───────────────────────────────────────────────
         "price":      int(row["price"] or 0),
@@ -90,8 +84,9 @@ def _row_to_dict(row: sqlite3.Row) -> Dict:
         # ── Bản đồ ─────────────────────────────────────────────────────
         "coords":     (float(lat), float(lon)),
 
-        # ── Tags (scoring dùng để match) ───────────────────────────────
-        "tags":       _parse_tags(row["mood_tags"], row["group_tags"]),
+        # FIX CỰC MẠNH 2: Tách bạch rõ 2 mảng tags không gộp chung nữa
+        "mood_tags":  _parse_tag_string(row["mood_tags"]),
+        "group_tags": _parse_tag_string(row["group_tags"]),
 
         # ── Giờ mở/đóng cửa ────────────────────────────────────────────
         "open_time":  raw_open,

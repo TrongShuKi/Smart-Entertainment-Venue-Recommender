@@ -166,5 +166,41 @@
   "Văn miếu Trấn Biên": {
     "description": "Văn miếu Trấn Biên là điểm đến lý tưởng cho những ai tìm kiếm không gian yên bình để học tập hay suy ngẫm một mình, giữa khung cảnh kiến trúc truyền thống tĩnh lặng, đặc biệt phù hợp trong tiết trời nhiều mây dịu mát.",
     "fact": "Văn miếu Trấn Biên được xây dựng vào năm 1715, là Văn miếu đầu tiên tại xứ Đàng Trong."
+  },
+  "Acoustic Bar Ngô Thời Nhiệm": {
+    "description": "Acoustic Bar Ngô Thời Nhiệm là điểm đến lý tưởng cho các cặp đôi tìm kiếm không gian lãng mạn và âm nhạc sống động. Với bầu không khí ấm cúng, quán hứa hẹn mang đến những giây phút hẹn hò đáng nhớ cùng những giai điệu acoustic mượt mà.",
+    "fact": "Quán thường xuyên tổ chức các đêm nhạc chủ đề với sự góp mặt của nhiều nghệ sĩ acoustic tài năng, mang đến trải nghiệm âm nhạc đa dạng."
+  },
+  "Galaxy Cinema Nguyễn Du": {
+    "description": "Galaxy Cinema Nguyễn Du là điểm hẹn hò lãng mạn lý tưởng, nơi các cặp đôi có thể cùng nhau thưởng thức những bộ phim mới nhất trong không gian giải trí hiện đại. Đây là lựa chọn tuyệt vời để tận hưởng khoảnh khắc riêng tư, tránh xa cái nóng oi ả và bầu trời nhiều mây, với mức chi phí phù hợp cho một buổi tối đáng nhớ.",
+    "fact": "Galaxy Cinema Nguyễn Du là một trong những cụm rạp tiên phong tại Thành phố Hồ Chí Minh, góp phần đưa trải nghiệm xem phim hiện đại đến gần hơn với khán giả Việt Nam."
+  },
+  "KDL Bửu Long": {
+    "description": "Khu du lịch Bửu Long sở hữu không gian xanh mát cùng hồ nước trong xanh, tạo nên khung cảnh lý tưởng cho những buổi hẹn hò lãng mạn. Với vẻ đẹp thơ mộng và yên bình, nơi đây hứa hẹn mang đến những khoảnh khắc đáng nhớ cho các cặp đôi.",
+    "fact": "Khu du lịch Bửu Long thường được ví như \"Vịnh Hạ Long thu nhỏ\" của miền Đông Nam Bộ nhờ cảnh quan hồ đá tự nhiên độc đáo."
+  },
+  "Phố ẩm thực Phan Xích Long": {
+    "description": "Phố ẩm thực Phan Xích Long là điểm đến lý tưởng để cùng bạn bè khám phá thế giới ẩm thực đa dạng trong một buổi tối nhiều mây, tận hưởng không gian ăn uống ấm cúng. Nơi đây quy tụ vô vàn món ngon từ Á sang Âu, hứa hẹn mang đến trải nghiệm vị giác khó quên.",
+    "fact": "Khu vực Phan Xích Long được mệnh danh là 'thiên đường ẩm thực' với mật độ nhà hàng, quán ăn và quán cà phê dày đặc bậc nhất Sài Gòn."
+  },
+  "Chùa Khmer Xvayton Cần Thơ": {
+    "description": "Chùa Khmer Xvayton Cần Thơ mang đến không gian rộng rãi và yên bình, là điểm đến lý tưởng cho các gia đình muốn tìm nơi thư giãn cuối tuần. Dù thời tiết nhiều mây, ngôi chùa vẫn chào đón du khách khám phá kiến trúc độc đáo và tìm hiểu văn hóa Khmer.",
+    "fact": "Chùa Xvayton là một trong những ngôi chùa Khmer cổ nhất tại Cần Thơ, nổi bật với kiến trúc truyền thống và những hàng cây thốt nốt đặc trưng."
+  },
+  "Nhà hát Thành phố Hồ Chí Minh": {
+    "description": "Nhà hát Thành phố Hồ Chí Minh, một công trình kiến trúc Pháp cổ điển, là biểu tượng văn hóa nổi bật giữa lòng Sài Gòn. Trong tiết trời nhiều mây và nhiệt độ 31°C, đây là điểm đến lý tưởng để du khách khám phá vẻ đẹp lịch sử và thưởng thức nghệ thuật trong không gian mát mẻ.",
+    "fact": "Nhà hát Thành phố Hồ Chí Minh được xây dựng vào năm 1897 và hoàn thành vào năm 1900, là một trong những nhà hát có tuổi đời lâu nhất tại Việt Nam."
+  },
+  "Nhà sách Fahasa Quang Trung": {
+    "description": "Trong tiết trời mưa nóng của Sài Gòn, Fahasa Quang Trung là điểm đến lý tưởng cho nhóm bạn tìm kiếm không gian mát mẻ để thư giãn, khám phá thế giới sách và tận hưởng những khoảnh khắc chill giữa lòng Quận 1 sôi động.",
+    "fact": "Fahasa được thành lập từ năm 1976, là một trong những chuỗi nhà sách và phát hành phẩm văn hóa lớn nhất Việt Nam."
+  },
+  "Khu cafe bờ sông Thanh Đa": {
+    "description": "Với không gian mở thoáng đãng bên bờ sông Thanh Đa, khu cafe này là lựa chọn lý tưởng cho các nhóm bạn muốn tìm một nơi thư giãn, tránh xa cái nóng oi ả và cùng nhau trò chuyện giữa khung cảnh yên bình, ngay cả khi trời đang đổ mưa.",
+    "fact": "Khu vực Thanh Đa là một bán đảo được bao bọc bởi sông Sài Gòn, tạo nên cảnh quan sông nước hữu tình và không khí trong lành hiếm có giữa lòng thành phố."
+  },
+  "Công viên Sakura Vinhomes Grand Park": {
+    "description": "Công viên Sakura tại Vinhomes Grand Park là điểm đến lý tưởng để nhóm bạn cùng nhau thư giãn, tận hưởng không gian xanh mát và chiêm ngưỡng vẻ đẹp kiến trúc Nhật Bản độc đáo. Với những con đường rợp bóng cây và hồ nước yên bình, nơi đây mang đến trải nghiệm \"chill\" đầy cuốn hút.",
+    "fact": "Công viên Sakura là một trong những công viên chủ đề Nhật Bản lớn nhất tại Việt Nam, mang đến trải nghiệm văn hóa độc đáo giữa lòng Sài Gòn."
   }
 }
